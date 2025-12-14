@@ -1,0 +1,48 @@
+# Build
+/build/
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+*.cmake
+
+# Qt
+*.user
+*.autosave
+*.qrc.depends
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# Binaries
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+
+# Logs
+*.log
+logs/
+
+# Configs sensíveis
+config/*.json
+!config/config.example.json
+
+# SSH / Keys (CRÍTICO)
+*.pem
+*.key
+id_rsa
+id_ed25519
+*.pub
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS lixo
+.DS_Store
+Thumbs.db
