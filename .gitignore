@@ -23,6 +23,9 @@ qrc_*.cpp
 *.so
 *.dylib
 
+# Deploy
+deploy/
+
 # Logs
 *.log
 logs/
