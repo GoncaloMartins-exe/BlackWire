@@ -17,7 +17,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    void changeEvent(QEvent *event);
 };
 
 #endif // MAINWINDOW_H
