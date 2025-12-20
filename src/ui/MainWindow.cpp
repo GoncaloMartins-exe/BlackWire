@@ -1,6 +1,5 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
-#include <QPixmap>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -8,19 +7,43 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    const int minW = 1080;
-    const int minH = 608;
-    
-    setMinimumSize(minW, minH);
+    setMinimumSize(1080, 608);
     resize(1280, 720);
 
-    QPixmap p1(":/images/Wire1.png");
-    QPixmap p1Fixed = p1.scaled(minW, minH, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-    ui->lblWire1->setPixmap(p1Fixed);
-    ui->lblWire1->setFixedSize(minW, minH);
+    m_pixWire1.load(":/images/Wire1.png");
+
+    ui->lblWire1->setScaledContents(true);
+    ui->lblWire1->setPixmap(m_pixWire1);
+    ui->lblWire1->move(0, 0);
+    
+    updateImageSize();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+    updateImageSize();
+}
+
+void MainWindow::updateImageSize()
+{
+    QSize windowSize = size();
+    
+    qreal aspectRatio = 1920.0 / 1080.0;
+    
+    int newWidth = windowSize.width();
+    int newHeight = static_cast<int>(newWidth / aspectRatio);
+    
+    if (newHeight > windowSize.height()) {
+        newHeight = windowSize.height();
+        newWidth = static_cast<int>(newHeight * aspectRatio);
+    }
+    
+    ui->lblWire1->setFixedSize(newWidth, newHeight);
+    ui->lblWire1->move(0, 0);
 }
