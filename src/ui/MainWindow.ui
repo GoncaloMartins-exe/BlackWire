@@ -1,24 +1,118 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-  <class>MainWindow</class>
-  <widget class="QMainWindow" name="MainWindow">
-    <property name="geometry">
-      <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>800</width>
-        <height>600</height>
-      </rect>
-    </property>
-    <property name="windowTitle">
-      <string>BlackWire</string>
-    </property>
-    <widget class="QWidget" name="centralwidget">
-      <property name="styleSheet">
-        <string>#centralwidget { border-image: url(:/images/background.png) 0 0 0 0 stretch stretch; }</string>
-      </property>
-    </widget>
-  </widget>
-  <resources/>
-  <connections/>
+	<class>MainWindow</class>
+
+	<widget class="QMainWindow" name="MainWindow">
+		<property name="geometry">
+			<rect>
+				<x>0</x>
+				<y>0</y>
+				<width>1280</width>
+				<height>720</height>
+			</rect>
+		</property>
+
+		<property name="windowTitle">
+			<string>BlackWire</string>
+		</property>
+
+		<widget class="QWidget" name="centralwidget">
+			<property name="styleSheet">
+				<string>#centralwidget { background-color: #FFFFFF; }</string>
+			</property>
+
+			<layout class="QGridLayout" name="gridLayout_Layers">
+				<property name="leftMargin"><number>0</number></property>
+				<property name="topMargin"><number>0</number></property>
+				<property name="rightMargin"><number>0</number></property>
+				<property name="bottomMargin"><number>0</number></property>
+
+				<!-- Wire 1 -->
+				<item row="0" column="0" alignment="Qt::AlignLeft|Qt::AlignTop">
+					<widget class="QLabel" name="lblWire1">
+						<property name="sizePolicy">
+							<sizepolicy hsizetype="Ignored" vsizetype="Ignored"/>
+						</property>
+						<property name="scaledContents">
+							<bool>true</bool>
+						</property>
+						<property name="pixmap">
+							<pixmap resource="../resources/resources.qrc">:/images/Wire1.png</pixmap>
+						</property>
+					</widget>
+				</item>
+
+				<!-- Wire 2 -->
+				<item row="0" column="0" alignment="Qt::AlignRight|Qt::AlignBottom">
+					<widget class="QLabel" name="lblWire2">
+						<property name="sizePolicy">
+							<sizepolicy hsizetype="Ignored" vsizetype="Ignored"/>
+						</property>
+						<property name="scaledContents">
+							<bool>true</bool>
+						</property>
+						<property name="pixmap">
+							<pixmap resource="../resources/resources.qrc">:/images/Wire2.png</pixmap>
+						</property>
+					</widget>
+				</item>
+
+				<!-- Conteúdo por cima das imagens -->
+				<item row="0" column="0">
+					<widget class="QWidget" name="containerContent" native="true">
+						<property name="styleSheet">
+							<string>background: transparent;</string>
+						</property>
+
+						<layout class="QVBoxLayout" name="verticalLayout_Content">
+							<property name="spacing"><number>20</number></property>
+							<property name="leftMargin"><number>30</number></property>
+							<property name="topMargin"><number>30</number></property>
+							<property name="rightMargin"><number>30</number></property>
+							<property name="bottomMargin"><number>30</number></property>
+
+							<!-- Título -->
+							<item>
+								<widget class="QLabel" name="lblTitle">
+									<property name="font">
+										<font>
+											<family>Segoe UI</family>
+											<pointsize>24</pointsize>
+											<bold>true</bold>
+										</font>
+									</property>
+									<property name="text">
+										<string>BlackWire</string>
+									</property>
+									<property name="alignment">
+										<set>Qt::AlignTop|Qt::AlignHCenter</set>
+									</property>
+									<property name="styleSheet">
+										<string>color: #000000;</string>
+									</property>
+								</widget>
+							</item>
+
+							<!-- Spacer para empurrar tudo para o topo -->
+							<item>
+								<spacer name="verticalSpacer">
+									<property name="orientation">
+										<enum>Qt::Vertical</enum>
+									</property>
+								</spacer>
+							</item>
+
+						</layout>
+					</widget>
+				</item>
+
+			</layout>
+		</widget>
+	</widget>
+
+	<resources>
+		<include location="../resources/resources.qrc"/>
+	</resources>
+
+	<connections/>
 </ui>

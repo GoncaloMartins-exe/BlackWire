@@ -1,7 +1,6 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
-#include <QDateTime>
-#include <QResizeEvent>
+#include <QEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -9,10 +8,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    this->setStyleSheet("#MainWindow { border-image: url(:/images/background.png) 0 0 0 0 stretch stretch; }");
+    setWindowTitle("BlackWire");
+    resize(1280, 720);
 
-    this->setWindowTitle("BlackWire");
-    this->resize(1280, 720);
+    setFixedSize(size());
 }
 
 MainWindow::~MainWindow()
@@ -20,16 +19,16 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::resizeEvent(QResizeEvent *event)
+void MainWindow::changeEvent(QEvent *event)
 {
-    int w = event->size().width();
-    int h = event->size().height();
+    if (event->type() == QEvent::WindowStateChange) {
+        if (isFullScreen()) {
+            setMinimumSize(0, 0);
+            setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        } else {
+            setFixedSize(size());
+        }
+    }
 
-    int idealH = w * 9 / 16;
-    int idealW = h * 16 / 9;
-
-    if (idealH <= h)
-        QMainWindow::resizeEvent(new QResizeEvent(QSize(w, idealH), event->oldSize()));
-    else
-        QMainWindow::resizeEvent(new QResizeEvent(QSize(idealW, h), event->oldSize()));
+    QMainWindow::changeEvent(event);
 }
