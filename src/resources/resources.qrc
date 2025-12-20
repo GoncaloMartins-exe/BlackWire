@@ -1,6 +1,6 @@
+<!DOCTYPE RCC>
 <RCC>
-	<qresource prefix="/">
-		<file>images/Wire1.png</file>
-		<file>images/Wire2.png</file>
-	</qresource>
+  <qresource prefix="/">
+    <file>images/Wire1.png</file>
+  </qresource>
 </RCC>
