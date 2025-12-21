@@ -5,8 +5,13 @@
 #include <QPixmap>
 #include <QResizeEvent>
 #include <QGraphicsDropShadowEffect>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QProcess>
+#include <QDebug>
 
 #include "ui_MainWindow.h"
+#include "SSHLoginWidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -53,14 +58,6 @@ private:
     void setupBackground();
 
     /**
-     * @brief Applies visual effects to UI components.
-     *
-     * Configures graphical effects such as drop shadows for
-     * specific widgets to improve visual depth and separation.
-     */
-    void setupShadows();
-
-    /**
      * @brief Updates the background size and position.
      *
      * Recalculates the background dimensions based on the current
@@ -69,6 +66,10 @@ private:
      */
     void updateBackgroundSize();
 
+private slots:
+    void on_btnAddDevice_clicked();
+    
+    void startSSHConnection(const QString &user, const QString &host);
 };
 
 #endif // MAINWINDOW_H

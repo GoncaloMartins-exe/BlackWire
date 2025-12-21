@@ -17,14 +17,19 @@ add_executable(BlackWire
     src/ui/MainWindow.cpp
     src/ui/MainWindow.ui
     src/resources/resources.qrc
+    src/core/SSHLoginWidget.h
+    src/core/SSHLoginWidget.cpp
 )
 
-target_include_directories(BlackWire PRIVATE src/ui)
+target_include_directories(BlackWire PRIVATE 
+    src/ui
+    src/core
+)
 
 target_link_libraries(BlackWire PRIVATE Qt6::Widgets)
 
 if(WIN32)
-    set_property(TARGET BlackWire PROPERTY WIN32_EXECUTABLE ON)
+    #set_property(TARGET BlackWire PROPERTY WIN32_EXECUTABLE ON)
 endif()
 
 if(WIN32)
