@@ -78,6 +78,62 @@
 								</widget>
 							</item>
 
+							<item>
+								<spacer name="spacerAfterTitle">
+									<property name="orientation">
+										<enum>Qt::Vertical</enum>
+									</property>
+									<property name="sizeHint">
+										<size>
+											<width>20</width>
+											<height>20</height>
+										</size>
+									</property>
+								</spacer>
+							</item>
+
+							<!-- Container dos dispositivos -->
+							<item>
+								<layout class="QHBoxLayout" name="horizontalLayout_DynamicWrapper">
+									<item>
+										<spacer name="spacerLeft">
+											<property name="orientation">
+												<enum>Qt::Horizontal</enum>
+											</property>
+										</spacer>
+									</item>
+
+									<item>
+										<widget class="QWidget" name="containerDynamic">
+											<property name="styleSheet">
+												<string>
+													background-color: #F5F5F5;
+													border-radius: 12px;
+												</string>
+											</property>
+
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Expanding" vsizetype="Expanding"/>
+											</property>
+
+											<layout class="QVBoxLayout" name="verticalLayout_DynamicContainer">
+												<property name="alignment">
+													<set>Qt::AlignCenter</set>
+												</property>
+											</layout>
+										</widget>
+									</item>
+
+									<item>
+										<spacer name="spacerRight">
+											<property name="orientation">
+												<enum>Qt::Horizontal</enum>
+											</property>
+										</spacer>
+									</item>
+								</layout>
+							</item>
+
 							<!-- Spacer para empurrar tudo para o topo -->
 							<item>
 								<spacer name="verticalSpacer">

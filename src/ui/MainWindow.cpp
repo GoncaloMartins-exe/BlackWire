@@ -15,6 +15,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lblWire1->setScaledContents(true);
     ui->lblWire1->setPixmap(m_pixWire1);
     ui->lblWire1->move(0, 0);
+
+    auto shadow = new QGraphicsDropShadowEffect(this);
+    shadow->setBlurRadius(25);
+    shadow->setOffset(-6, 6);
+    shadow->setColor(QColor(0, 0, 0, 120));
+
+    ui->containerDynamic->setGraphicsEffect(shadow);
     
     updateImageSize();
 }

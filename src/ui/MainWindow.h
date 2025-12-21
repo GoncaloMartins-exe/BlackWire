@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QPixmap>
 #include <QResizeEvent>
+#include <QGraphicsDropShadowEffect>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
