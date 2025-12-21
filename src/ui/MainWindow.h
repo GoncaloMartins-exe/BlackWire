@@ -24,8 +24,11 @@ protected:
 private:
     Ui::MainWindow *ui;
     QPixmap m_pixWire1;
-    void updateImageSize();
-    
+    void setupWindow();
+    void setupBackground();
+    void setupShadows();
+    void updateBackgroundSize();
+
 };
 
 #endif // MAINWINDOW_H
