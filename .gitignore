@@ -1,51 +1,47 @@
-# Build
-/build/
+# Ambiente virtual
+venv/
+.venv/
+env/
+
+# Bytecode Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Distribuição / empacotamento
+dist/
 build/
-cmake-build-*/
-CMakeFiles/
-CMakeCache.txt
-Makefile
-*.cmake
+*.spec
+*.egg-info/
 
-# Qt
-*.user
-*.autosave
-*.qrc.depends
-moc_*.cpp
-ui_*.h
-qrc_*.cpp
+# PyInstaller
+*.manifest
 
-# Binaries
-*.exe
-*.out
-*.app
-*.dll
-*.so
-*.dylib
+# Ficheiros de sistema
+# Windows
+Thumbs.db
+desktop.ini
+# macOS
+.DS_Store
+# Ubuntu
+*~
 
-# Deploy
-deploy/
+# IDEs e editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Variáveis de ambiente e segredos
+.env
+.env.*
+secrets.json
+config.json
 
 # Logs
 *.log
 logs/
 
-# Configs sensíveis
-config/*.json
-!config/config.example.json
-
-# SSH / Keys (CRÍTICO)
-*.pem
-*.key
-id_rsa
-id_ed25519
-*.pub
-
-# IDEs
-.vscode/
-.idea/
+# Ficheiros temporários
+*.tmp
 *.swp
-
-# OS lixo
-.DS_Store
-Thumbs.db
