@@ -45,3 +45,5 @@ logs/
 # Ficheiros temporários
 *.tmp
 *.swp
+
+.qtcreator

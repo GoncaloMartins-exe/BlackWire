@@ -6,7 +6,6 @@ app = QApplication(sys.argv)
 app.setApplicationName("BlackWire")
 app.setOrganizationName("BlackWire")
 
-#window = QWidget()
 window = MainWindow()
 window.show()
 
