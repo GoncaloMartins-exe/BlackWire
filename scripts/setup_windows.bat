@@ -23,38 +23,52 @@ echo.
 :: 1. Verificar Python
 :: -----------------------------------------------
 echo [1/3] A verificar Python...
-python --version >nul 2>&1
-if errorlevel 1 (
-    echo.
-    echo  [ERRO] Python nao encontrado!
-    echo  Instala em: https://www.python.org/downloads/
-    echo  Nao te esquecas de marcar "Add Python to PATH"
-    echo.
+
+set PYTHON_EXE=
+
+for %%p in (python python3 py) do (
+    for /f "delims=" %%i in ('where %%p 2^>nul') do (
+        echo %%i | findstr /i "msys mingw WindowsApps" >nul
+        if errorlevel 1 (
+            set PYTHON_EXE=%%i
+            goto :python_found
+        )
+    )
+)
+
+:python_found
+if "%PYTHON_EXE%"=="" (
+    echo  [ERRO] Python valido nao encontrado!
+    echo  Evita versoes MSYS2. Instala Python oficial.
     pause
     exit /b 1
 )
-for /f "tokens=*" %%i in ('python --version') do set PYVER=%%i
-echo  [OK] %PYVER% encontrado.
+
+for /f "tokens=*" %%i in ('"%PYTHON_EXE%" --version') do set PYVER=%%i
+echo  [OK] %PYVER%
+echo  [OK] Usando: %PYTHON_EXE%
 echo.
 
 :: -----------------------------------------------
 :: 2. Criar/reutilizar ambiente virtual
 :: -----------------------------------------------
-echo [2/3] A verificar ambiente virtual (venv)...
+echo [2/3] A criar ambiente virtual...
+
 if exist venv (
-    echo  [SKIP] venv ja existe, a reutilizar.
-) else (
-    echo  A criar venv...
-    python -m venv venv
-    if errorlevel 1 (
-        echo  [ERRO] Falha ao criar venv.
-        pause
-        exit /b 1
-    )
-    echo  [OK] venv criado.
+    echo  A remover venv antigo...
+    rmdir /s /q venv
 )
 
-call venv\Scripts\activate.bat
+"%PYTHON_EXE%" -m venv venv
+if errorlevel 1 (
+    echo  [ERRO] Falha ao criar venv.
+    pause
+    exit /b 1
+)
+
+echo  [OK] venv criado.
+
+call "%~dp0..\venv\Scripts\activate.bat"
 python -m pip install --upgrade pip --quiet
 echo  [OK] pip atualizado.
 echo.
@@ -103,4 +117,5 @@ echo    1. Ativa o venv:   venv\Scripts\activate
 echo    2. Corre a app:    python main.py
 echo  -----------------------------------------------
 echo.
+cmd /k
 pause
