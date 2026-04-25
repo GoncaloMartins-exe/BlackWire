@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget,
     QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget
 )
+from PySide6.QtGui import QFont
 from ui.pages.dashboard import DashboardPage
 from ui.widgets.helper import *
 
@@ -172,7 +173,7 @@ class MainWindow(QMainWindow):
         page = QWidget()
         page.setStyleSheet(f"background-color: {BW_BG};")
         layout = QVBoxLayout(page)
-        layout.setAlignment(Qt.AlignCenter)
+        layout.setAlignment(Qt.AlignVCenter)
         layout.setSpacing(16)
 
         layout.addWidget(load_image("placeholder.png", 64, 64), alignment=Qt.AlignCenter)

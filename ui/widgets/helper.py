@@ -60,7 +60,7 @@ def make_label(
     size: int = 13,
     bold: bool = False,
     letter_spacing: str = "normal",
-    align: Qt.AlignmentFlag = Qt.AlignLeft,
+    align: Qt.AlignmentFlag = Qt.AlignVCenter,
     extra_style: str = "",
 ) -> QLabel:
     label = QLabel(text)
