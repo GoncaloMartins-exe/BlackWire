@@ -7,6 +7,7 @@ from PySide6.QtGui import QPixmap
 BW_BG         = "#0b0f1a"
 BW_SURFACE    = "#111827"
 BW_SURFACE2   = "#1a2235"
+BW_SURFACE3   = "#212d42"
 BW_BORDER     = "#1e2d40"
 BW_CYAN       = "#00d4ff"
 BW_GREEN      = "#00ff88"
@@ -21,7 +22,7 @@ def load_image(
     filename: str,
     width: int,
     height: int,
-    style: str = "border: none;",
+    style: str = "border: none; background: transparent",
     folder: str = "assets/icons",
 ) -> QLabel:
     label = QLabel()
@@ -71,6 +72,7 @@ def make_label(
         font-size: {size}px;
         font-weight: {weight};
         letter-spacing: {letter_spacing};
+        background: transparent;
         border: none;
         {extra_style}
     """)

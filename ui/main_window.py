@@ -17,6 +17,10 @@ class SidebarButton(QWidget):
         super().__init__(parent)
         self._label = label
         self._active = False
+        self._hover = False
+
+        self.setAttribute(Qt.WA_StyledBackground, True)
+
         self.setFixedHeight(48)
         self.setCursor(Qt.PointingHandCursor)
         self.setObjectName("SidebarButton")
@@ -47,7 +51,7 @@ class SidebarButton(QWidget):
                     border-left: 3px solid {BW_CYAN};
                 }}
             """)
-            self._text.setStyleSheet(f"color: {BW_CYAN}; font-size: 13px; font-weight: 500; border: none;")
+            self._text.setStyleSheet(f"color: {BW_CYAN}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;")
         else:
             self.setStyleSheet("""
                 QWidget#SidebarButton {
@@ -55,17 +59,17 @@ class SidebarButton(QWidget):
                     border-left: 3px solid transparent;
                 }
             """)
-            self._text.setStyleSheet(f"color: {BW_TEXT_DIM}; font-size: 13px; font-weight: 500; border: none;")
+            self._text.setStyleSheet(f"color: {BW_TEXT_DIM}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;")
 
     def enterEvent(self, event):
         if not self._active:
             self.setStyleSheet(f"""
                 QWidget#SidebarButton {{
-                    background-color: #16202f;
+                    background-color: {BW_SURFACE3};
                     border-left: 3px solid transparent;
                 }}
             """)
-            self._text.setStyleSheet(f"color: {BW_TEXT}; font-size: 13px; font-weight: 500; border: none;")
+            self._text.setStyleSheet(f"color: {BW_TEXT}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;")
 
     def leaveEvent(self, event):
         self._update_style()
@@ -83,8 +87,10 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("BlackWire")
         self.setMinimumSize(QSize(1080, 720))
         self.resize(1080, 720)
-        self.setStyleSheet(f"QMainWindow {{ background-color: {BW_BG}; }}")
-
+        self.setStyleSheet(f"""
+                           QMainWindow {{ background-color: {BW_BG}; }}
+                           """)
+        
         root = QWidget()
         root.setStyleSheet(f"background-color: {BW_BG};")
         self.setCentralWidget(root)
@@ -171,7 +177,6 @@ class MainWindow(QMainWindow):
     # Placeholder genérico____________________________________________________________________
     def _placeholder(self, name: str) -> QWidget:
         page = QWidget()
-        page.setStyleSheet(f"background-color: {BW_BG};")
         layout = QVBoxLayout(page)
         layout.setAlignment(Qt.AlignVCenter)
         layout.setSpacing(16)
