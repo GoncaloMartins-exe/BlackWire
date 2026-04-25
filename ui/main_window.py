@@ -4,48 +4,80 @@ import os
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget,
-    QVBoxLayout, QHBoxLayout, QLabel, QPushButton
+    QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget
 )
-from PySide6.QtGui import QPixmap
-
-# Palete de cores
-BW_BG       = "#0b0f1a"
-BW_SURFACE  = "#111827"
-BW_BORDER   = "#1e2d40"
-BW_CYAN     = "#00d4ff"
-BW_GREEN    = "#00ff88"
-BW_TEXT     = "#e0eaf5"
-BW_TEXT_DIM = "#5a7a99"
+from PySide6.QtGui import QFont
+from ui.pages.dashboard import DashboardPage
+from ui.widgets.helper import *
 
 
-class NavButton(QPushButton):
-    """Botão de navegação da navbar com estado ativo."""
+class SidebarButton(QWidget):
 
-    def __init__(self, label: str, parent=None):
-        super().__init__(label, parent)
-        self.setCheckable(True)
-        self.setFixedHeight(64)
-        self.setMinimumWidth(90)
+    def __init__(self, icon_file: str, label: str, parent=None):
+        super().__init__(parent)
+        self._label = label
+        self._active = False
+        self._hover = False
+
+        self.setAttribute(Qt.WA_StyledBackground, True)
+
+        self.setFixedHeight(48)
         self.setCursor(Qt.PointingHandCursor)
-        self.setStyleSheet(f"""
-            QPushButton {{
-                background: transparent;
-                color: {BW_TEXT_DIM};
-                border: none;
-                border-bottom: 2px solid transparent;
-                font-size: 12px;
-                font-weight: 500;
-                letter-spacing: 0.5px;
-                padding: 0 16px;
-            }}
-            QPushButton:hover {{
-                color: {BW_TEXT};
-            }}
-            QPushButton:checked {{
-                color: {BW_CYAN};
-                border-bottom: 2px solid {BW_CYAN};
-            }}
-        """)
+        self.setObjectName("SidebarButton")
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(16, 0, 16, 0)
+        layout.setSpacing(12)
+        layout.setAlignment(Qt.AlignVCenter)
+
+        self._icon = load_image(icon_file, 20, 20)
+        self._text = make_label(label, color=BW_TEXT_DIM)
+
+        layout.addWidget(self._icon)
+        layout.addWidget(self._text)
+        layout.addStretch()
+
+        self._update_style()
+
+    def set_active(self, active: bool):
+        self._active = active
+        self._update_style()
+
+    def _update_style(self):
+        if self._active:
+            self.setStyleSheet(f"""
+                QWidget#SidebarButton {{
+                    background-color: {BW_SURFACE2};
+                    border-left: 3px solid {BW_CYAN};
+                }}
+            """)
+            self._text.setStyleSheet(f"color: {BW_CYAN}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;")
+        else:
+            self.setStyleSheet("""
+                QWidget#SidebarButton {
+                    background: transparent;
+                    border-left: 3px solid transparent;
+                }
+            """)
+            self._text.setStyleSheet(f"color: {BW_TEXT_DIM}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;")
+
+    def enterEvent(self, event):
+        if not self._active:
+            self.setStyleSheet(f"""
+                QWidget#SidebarButton {{
+                    background-color: {BW_SURFACE3};
+                    border-left: 3px solid transparent;
+                }}
+            """)
+            self._text.setStyleSheet(f"color: {BW_TEXT}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;")
+
+    def leaveEvent(self, event):
+        self._update_style()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            if hasattr(self, '_on_click'):
+                self._on_click(self._label)
 
 
 class MainWindow(QMainWindow):
@@ -55,81 +87,102 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("BlackWire")
         self.setMinimumSize(QSize(1080, 720))
         self.resize(1080, 720)
-
-        self.setStyleSheet(f"QMainWindow {{ background-color: {BW_BG}; }}")
-
+        self.setStyleSheet(f"""
+                           QMainWindow {{ background-color: {BW_BG}; }}
+                           """)
+        
         root = QWidget()
         root.setStyleSheet(f"background-color: {BW_BG};")
         self.setCentralWidget(root)
 
-        layout = QVBoxLayout(root)
+        root_layout = QHBoxLayout(root)
+        root_layout.setContentsMargins(0, 0, 0, 0)
+        root_layout.setSpacing(0)
+
+        root_layout.addWidget(self._build_sidebar())
+        root_layout.addWidget(self._build_pages())
+
+    # Sidebar__________________________________________________________________________________
+    def _build_sidebar(self) -> QWidget:
+        sidebar = QWidget()
+        sidebar.setFixedWidth(SIDEBAR_WIDTH)
+        sidebar.setStyleSheet(f"background-color: {BW_SURFACE}; border-right: 1px solid {BW_BORDER};")
+
+        layout = QVBoxLayout(sidebar)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        layout.addWidget(self._build_navbar())
-        layout.addWidget(self._build_content())
+        # Logo_________________________________________________________________________________
+        logo = make_hbox(
+            load_image("LogoBlackWire.png", 36, 36),
+            make_label("BLACKWIRE", color=BW_CYAN, size=13, bold=True, letter_spacing="2px"),
+            margins=(16, 0, 16, 0),
+            spacing=10,
+        )
+        logo.setFixedHeight(72)
+        layout.addWidget(logo)
 
-    # Navbar
-    def _build_navbar(self) -> QWidget:
-        navbar = QWidget()
-        navbar.setFixedHeight(64)
-        navbar.setStyleSheet(f"""
-            background-color: {BW_SURFACE};
-            border-bottom: 1px solid {BW_BORDER};
-        """)
+        layout.addWidget(make_separator())
+        layout.addSpacing(12)
 
-        nav_layout = QHBoxLayout(navbar)
-        nav_layout.setContentsMargins(24, 0, 24, 0)
-        nav_layout.setSpacing(0)
+        # Botões de navegação_________________________________________________________________
+        pages = [
+            ("placeholder.png", "Dashboard"),
+            ("placeholder.png", "Logs"),
+            ("placeholder.png", "Files"),
+            ("placeholder.png", "Settings"),
+        ]
 
-        base_dir = os.path.dirname(os.path.dirname(__file__))
-        logo_path = os.path.join(base_dir, "assets", "icons", "LogoBlackWire.png")
+        self._sidebar_buttons = []
+        for icon_file, label in pages:
+            btn = SidebarButton(icon_file, label)
+            btn._on_click = self._navigate
+            layout.addWidget(btn)
+            self._sidebar_buttons.append(btn)
 
-        # Imagem
-        logo_img = QLabel()
-        pixmap = QPixmap(logo_path)
-        logo_img.setPixmap(pixmap.scaled(45, 45, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        logo_img.setFixedSize(45, 45)
-        logo_img.setStyleSheet("border: none;")
+        self._sidebar_buttons[0].set_active(True)
 
-        # Texto
-        logo_text = QLabel("BLACKWIRE")
-        logo_text.setStyleSheet(f"""
-            color: {BW_CYAN};
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            padding-left: 8px;
-            padding-right: 24px;
-        """)
+        layout.addStretch()
 
-        logo_container = QWidget()
-        logo_layout = QHBoxLayout(logo_container)
-        logo_layout.setContentsMargins(0, 0, 0, 0)
-        logo_layout.setSpacing(0)
+        layout.addWidget(make_separator())
+        layout.addWidget(make_label("v0.1.0", color=BW_TEXT_DIM, size=11, align=Qt.AlignCenter, extra_style="padding: 10px 0;"))
 
-        logo_layout.addWidget(logo_img)
-        logo_layout.addWidget(logo_text)
+        return sidebar
 
-        nav_layout.addWidget(logo_container)
+    # Stack de páginas________________________________________________________________________
+    def _build_pages(self) -> QStackedWidget:
+        self._stack = QStackedWidget()
+        self._stack.setStyleSheet(f"background-color: {BW_BG};")
 
-        return navbar
+        self._pages = {
+            "Dashboard": DashboardPage(),
+            "Logs":      self._placeholder("Logs"),
+            "Files":     self._placeholder("Files"),
+            "Settings":  self._placeholder("Settings"),
+        }
 
-    # Conteúdo principal
-    def _build_content(self) -> QWidget:
-        content = QWidget()
-        content.setStyleSheet(f"background-color: {BW_BG};")
+        for page in self._pages.values():
+            self._stack.addWidget(page)
 
-        layout = QVBoxLayout(content)
-        layout.setAlignment(Qt.AlignCenter)
+        return self._stack
 
-        placeholder = QLabel("Dashboard")
-        placeholder.setAlignment(Qt.AlignCenter)
-        placeholder.setStyleSheet(f"""
-            color: {BW_TEXT_DIM};
-            font-size: 22px;
-            font-weight: 600;
-        """)
-        layout.addWidget(placeholder)
+    # Navegação_______________________________________________________________________________
+    def _navigate(self, label: str):
+        keys = list(self._pages.keys())
+        if label in keys:
+            self._stack.setCurrentIndex(keys.index(label))
+        for btn in self._sidebar_buttons:
+            btn.set_active(btn._label == label)
 
-        return content
+    # Placeholder genérico____________________________________________________________________
+    def _placeholder(self, name: str) -> QWidget:
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setAlignment(Qt.AlignVCenter)
+        layout.setSpacing(16)
+
+        layout.addWidget(load_image("placeholder.png", 64, 64), alignment=Qt.AlignCenter)
+        layout.addWidget(make_label(name, color=BW_TEXT_DIM, size=20, bold=True, align=Qt.AlignCenter))
+        layout.addWidget(make_label("Em breve...", color=BW_CYAN, size=12, letter_spacing="2px", align=Qt.AlignCenter))
+
+        return page
