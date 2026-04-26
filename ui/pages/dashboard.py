@@ -77,21 +77,24 @@ class ServiceCard(QWidget):
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setStyleSheet(f"""
             QWidget {{
-                background-color: {BW_SURFACE};
-                border: 1px solid {BW_BORDER};
-                border-radius: 14px;
+                background-color: rgba(255, 255, 255, 15);
+                border: 1px solid rgba(255, 255, 255, 25);
+                border-radius: 16px;
+            }}
+            QWidget:hover {{
+                background-color: rgba(255, 255, 255, 25);
+                border: 1px solid rgba(255, 255, 255, 45);
             }}
         """)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 0, 16, 0)
-        layout.setSpacing(14)
+        layout.setContentsMargins(15, 15, 15, 15)
 
         icon = load_image(icon_file, 36, 36)
         icon.setStyleSheet(f"""
-            background-color: {BW_SURFACE2};
-            border: 1px solid {BW_BORDER};
-            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 10);
+            border-radius: 10px;
+            padding: 5px;
         """)
 
         text_col = QWidget()
