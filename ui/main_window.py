@@ -28,7 +28,7 @@ class SidebarButton(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(16, 0, 16, 0)
         layout.setSpacing(12)
-        layout.setAlignment(Qt.AlignVCenter)
+        layout.setAlignment(Qt.AlignCenter)
 
         self._icon = load_image(icon_file, 20, 20)
         self._text = make_label(label, color=BW_TEXT_DIM)
