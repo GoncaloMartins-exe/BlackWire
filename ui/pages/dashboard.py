@@ -138,8 +138,8 @@ class DashboardPage(QWidget):
         self._ram     = CircularGauge("RAM USAGE",           "RAM",     "GB",   BW_CYAN)
         self._storage = CircularGauge("STORAGE AVAILABILITY","STORAGE", "GB",   BW_GREEN)
 
-        self._cpu.set_value(0, "0%")
-        self._ram.set_value(0, "0 GB", "/ 0 GB")
+        self._cpu.set_value(1, "100%")
+        self._ram.set_value(0.5, "0 GB", "/ 0 GB")
         self._storage.set_value(0, "0 GB", "/ 0 GB")
 
         for gauge in [self._cpu, self._ram, self._storage]:
