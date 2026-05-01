@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, QRectF
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PySide6.QtGui import QPainter, QPen, QColor, QFont
 from ui.widgets.helper import *
 
@@ -82,8 +82,8 @@ class ServiceCard(QWidget):
                 border-radius: 16px;
             }}
             QWidget:hover {{
-                background-color: rgba(255, 255, 255, 25);
-                border: 1px solid rgba(255, 255, 255, 45);
+                background-color: rgba(255, 255, 255, 20);
+                color: {BW_TEXT};
             }}
         """)
 
@@ -123,8 +123,44 @@ class DashboardPage(QWidget):
 
     def _setup_ui(self):
         root = QVBoxLayout(self)
-        root.setContentsMargins(48, 0, 48, 40)
+        root.setContentsMargins(24, 24, 24, 40)
         root.setSpacing(0)
+
+        # Header
+        header = QWidget()
+        header.setStyleSheet("background: transparent")
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(0, 0, 0, 16)
+        header_layout.setSpacing(0)
+
+        title = make_label("Dashboard", color=BW_TEXT, size=20, bold=True)
+        header_layout.addWidget(title)
+        header_layout.addStretch()
+
+        self._uptime_label = make_label("Uptime: -", color=BW_TEXT_DIM, size=11)
+        header_layout.addWidget(self._uptime_label)
+
+        refresh_btn = QPushButton("↻  Refresh")
+        refresh_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: rgba(255, 255, 255, 15);
+                border: 1px solid rgba(255, 255, 255, 25);
+                border-radius: 8px;
+                color: {BW_TEXT_DIM};
+                font-size: 11px;
+                padding: 5px 14px;
+                margin-left: 12px;
+            }}
+            QPushButton:hover {{
+                background-color: rgba(255, 255, 255, 20);
+                color: {BW_TEXT};
+            }}
+        """)
+
+        refresh_btn.clicked.connect(self._on_refresh)
+        header_layout.addWidget(refresh_btn)
+
+        root.addWidget(header)
 
         # Gauges
         gauges_widget = QWidget()
@@ -172,3 +208,13 @@ class DashboardPage(QWidget):
         self._cpu.set_value(cpu / 100, f"{cpu:.0f}%")
         self._ram.set_value(ram_used / ram_total, f"{ram_used:.1f} GB", f"/ {ram_total:.0f} GB")
         self._storage.set_value(storage_free / storage_total, f"{storage_free:.1f} GB", f"/ {storage_total:.1f}")
+
+    def update_uptime(self, seconds: int):
+        days, r = divmod(seconds, 86400)
+        hours, r = divmod(r, 3600)
+        mins = r // 60
+        self._uptime_label.setText(f"Uptime:  {days}d {hours}h {mins}m")
+
+    def _on_refresh(self):
+        # tenho de ligar ao servidor aqui
+        pass
