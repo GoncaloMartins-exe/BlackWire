@@ -127,10 +127,10 @@ class MainWindow(QMainWindow):
 
         # Botões de navegação_________________________________________________________________
         pages = [
-            ("placeholder.png", "Dashboard"),
-            ("placeholder.png", "Logs"),
-            ("placeholder.png", "Files"),
-            ("placeholder.png", "Settings"),
+            ("dashboard.png", "Dashboard"),
+            ("logs.png", "Logs"),
+            ("files.png", "Files"),
+            ("settings.png", "Settings"),
         ]
 
         self._sidebar_buttons = []
