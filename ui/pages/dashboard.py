@@ -137,7 +137,18 @@ class DashboardPage(QWidget):
         header_layout.addWidget(title)
         header_layout.addStretch()
 
-        self._uptime_label = make_label("Uptime: -", color=BW_TEXT_DIM, size=11)
+        self._uptime_label = QLabel("Uptime: -")
+        self._uptime_label.setStyleSheet(f"""
+            QLabel {{
+                background-color: rgba(255, 255, 255, 15);
+                border: 1px solid rgba(255, 255, 255, 25);
+                border-radius: 8px;
+                color: {BW_TEXT_DIM};
+                font-size: 11px;
+                padding: 5px 14px;
+            }}
+        """)
+
         header_layout.addWidget(self._uptime_label)
 
         refresh_btn = QPushButton("↻  Refresh")
@@ -166,8 +177,7 @@ class DashboardPage(QWidget):
         gauges_widget = QWidget()
         gauges_widget.setStyleSheet("background: transparent;")
         gauges_layout = QHBoxLayout(gauges_widget)
-        gauges_layout.setAlignment(Qt.AlignCenter)
-        gauges_layout.setSpacing(48)
+        gauges_layout.setSpacing(20)
         gauges_layout.setContentsMargins(0, 0, 0, 0)
 
         self._cpu     = CircularGauge("CPU UTILIZATION",     "CPU",     "%",    BW_CYAN)
@@ -180,16 +190,22 @@ class DashboardPage(QWidget):
 
         for gauge in [self._cpu, self._ram, self._storage]:
             col = QWidget()
-            col.setStyleSheet("background: transparent;")
+            col.setStyleSheet(f"""
+                QWidget {{
+                    background-color: rgba(255, 255, 255, 5);
+                    border: 1px solid rgba(255,255,255,10);
+                    border-radius: 8px;
+                }}
+            """)
             col_layout = QVBoxLayout(col)
             col_layout.setAlignment(Qt.AlignCenter)
             col_layout.setSpacing(10)
-            col_layout.setContentsMargins(0, 0, 0, 0)
+            col_layout.setContentsMargins(0, 24, 0, 24)
             col_layout.addWidget(make_label(gauge.title, color=BW_TEXT_DIM, size=10, letter_spacing="1.5px", align=Qt.AlignCenter))
             col_layout.addWidget(gauge, alignment=Qt.AlignCenter)
-            gauges_layout.addWidget(col)
-
-        root.addWidget(gauges_widget, stretch=2)
+            gauges_layout.addWidget(col, stretch=1)
+        
+        root.addWidget(gauges_widget)
 
         # Service cards
         cards_widget = QWidget()
