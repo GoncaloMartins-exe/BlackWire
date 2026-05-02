@@ -31,13 +31,17 @@ class CircularGauge(QWidget):
         margin = 18
         rect = QRectF(margin, margin, w - margin * 2, h - margin * 2)
 
+        # ===========================================================================
         # Arco de fundo
+        # ===========================================================================
         pen_bg = QPen(QColor("#1e2d40"), 8)
         pen_bg.setCapStyle(Qt.RoundCap)
         painter.setPen(pen_bg)
         painter.drawArc(rect, -220 * 16, -280 * 16)
 
+        # ===========================================================================
         # Arco de valor
+        # ===========================================================================
         if self._value > 0:
             pen_fg = QPen(QColor(self.color), 8)
             pen_fg.setCapStyle(Qt.RoundCap)
@@ -47,19 +51,25 @@ class CircularGauge(QWidget):
 
         cx, cy = w // 2, h // 2
 
+        # ===========================================================================
         # Label topo
+        # ===========================================================================
         painter.setPen(QColor(BW_TEXT_DIM))
         f = QFont("Segoe UI", 9)
         painter.setFont(f)
         painter.drawText(QRectF(0, cy - 38, w, 20), Qt.AlignCenter, self.label)
 
+        # ===========================================================================
         # Valor principal
+        # ===========================================================================
         painter.setPen(QColor(BW_TEXT))
         f2 = QFont("Segoe UI", 22, QFont.Bold)
         painter.setFont(f2)
         painter.drawText(QRectF(0, cy - 18, w, 36), Qt.AlignCenter, self._display)
 
+        # ===========================================================================
         # Sub-texto
+        # ===========================================================================
         if self._sub:
             painter.setPen(QColor(BW_TEXT_DIM))
             f3 = QFont("Segoe UI", 9)
@@ -126,7 +136,9 @@ class DashboardPage(QWidget):
         root.setContentsMargins(24, 24, 24, 40)
         root.setSpacing(0)
 
+        # ===========================================================================
         # Header
+        # ===========================================================================
         header = QWidget()
         header.setStyleSheet("background: transparent")
         header_layout = QHBoxLayout(header)
@@ -173,7 +185,9 @@ class DashboardPage(QWidget):
 
         root.addWidget(header)
 
+        # ===========================================================================
         # Gauges
+        # ===========================================================================
         gauges_widget = QWidget()
         gauges_widget.setStyleSheet("background: transparent;")
         gauges_layout = QHBoxLayout(gauges_widget)
@@ -207,7 +221,9 @@ class DashboardPage(QWidget):
         
         root.addWidget(gauges_widget)
 
+        # ===========================================================================
         # Service cards
+        # ===========================================================================
         cards_widget = QWidget()
         cards_widget.setStyleSheet("background: transparent;")
         cards_layout = QHBoxLayout(cards_widget)

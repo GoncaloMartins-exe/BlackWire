@@ -102,7 +102,9 @@ class MainWindow(QMainWindow):
         root_layout.addWidget(self._build_sidebar())
         root_layout.addWidget(self._build_pages())
 
-    # Sidebar__________________________________________________________________________________
+    # ===========================================================================
+    # Sidebar
+    # ===========================================================================
     def _build_sidebar(self) -> QWidget:
         sidebar = QWidget()
         sidebar.setFixedWidth(SIDEBAR_WIDTH)
@@ -112,7 +114,9 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # Logo_________________________________________________________________________________
+        # ===========================================================================
+        # Logo
+        # ===========================================================================
         logo = make_hbox(
             load_image("LogoBlackWire.png", 36, 36),
             make_label("BLACKWIRE", color=BW_CYAN, size=13, bold=True, letter_spacing="2px"),
@@ -125,7 +129,9 @@ class MainWindow(QMainWindow):
         layout.addWidget(make_separator())
         layout.addSpacing(12)
 
-        # Botões de navegação_________________________________________________________________
+        # ===========================================================================
+        # Botões de navegação
+        # ===========================================================================
         pages = [
             ("dashboard.png", "Dashboard"),
             ("logs.png", "Logs"),
@@ -149,7 +155,9 @@ class MainWindow(QMainWindow):
 
         return sidebar
 
-    # Stack de páginas________________________________________________________________________
+    # ===========================================================================
+    # Stack de páginas
+    # ===========================================================================
     def _build_pages(self) -> QStackedWidget:
         self._stack = QStackedWidget()
         self._stack.setStyleSheet(f"background-color: {BW_BG};")
@@ -166,7 +174,9 @@ class MainWindow(QMainWindow):
 
         return self._stack
 
-    # Navegação_______________________________________________________________________________
+    # ===========================================================================
+    # Navegação
+    # ===========================================================================
     def _navigate(self, label: str):
         keys = list(self._pages.keys())
         if label in keys:
@@ -174,7 +184,9 @@ class MainWindow(QMainWindow):
         for btn in self._sidebar_buttons:
             btn.set_active(btn._label == label)
 
-    # Placeholder genérico____________________________________________________________________
+    # ===========================================================================
+    # Placeholder genérico
+    # ===========================================================================
     def _placeholder(self, name: str) -> QWidget:
         page = QWidget()
         layout = QVBoxLayout(page)
