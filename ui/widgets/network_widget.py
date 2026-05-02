@@ -1,5 +1,5 @@
 from collections import deque
-from PySide6.QtCore import Qt, QRectF, QPointF
+from PySide6.QtCore import Qt, QRectF, QPointF, Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from PySide6.QtGui import QPainter, QPen, QColor, QFont, QPainterPath, QLinearGradient
 from ui.widgets.helper import *
@@ -8,17 +8,39 @@ MAX_POINTS = 13  # 13 × 5s = 60s de histórico
 
 
 class NetworkGraph(QWidget):
+
+    column_hovered = Signal(int, float, float)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self._upload   = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
         self._download = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
         self._peak     = 1.0
+        self._hover_i  = -1
         self.setMinimumHeight(80)
+        self.setMouseTracking(True)
 
     def push(self, upload_mbps: float, download_mbps: float):
         self._upload.append(upload_mbps)
         self._download.append(download_mbps)
         self._peak = max(1.0, max(self._upload), max(self._download))
+        self.update()
+
+    def mouseMoveEvent(self, event):
+        w = self.width()
+        pad_l, pad_r = 8, 8
+        usable = w - pad_l - pad_r
+        x = event.position().x() - pad_l
+        i = int(round(x / usable * (MAX_POINTS - 1)))
+        i = max(0, min(MAX_POINTS - 1, i))
+        if i != self._hover_i:
+            self._hover_i = i
+            self.column_hovered.emit(i, list(self._upload)[i], list(self._download)[i])
+            self.update()
+
+    def leaveEvent(self, event):
+        self._hover_i = -1
+        self.column_hovered.emit(-1, 0.0, 0.0)
         self.update()
 
     def paintEvent(self, event):
@@ -57,6 +79,16 @@ class NetworkGraph(QWidget):
                 Qt.AlignCenter, label
             )
 
+        # Linha vertical de hover
+        if self._hover_i >= 0:
+            hx = x_of(self._hover_i)
+            pen_h = QPen(QColor("#ffffff"), 1, Qt.DashLine)
+            pen_h.setDashPattern([3, 4])
+            painter.setPen(pen_h)
+            painter.setOpacity(0.25)
+            painter.drawLine(QPointF(hx, pad_t), QPointF(hx, h - pad_b))
+            painter.setOpacity(1.0)
+        
         def draw_series(data, color_hex, alpha_fill):
             points = [QPointF(x_of(i), y_of(v)) for i, v in enumerate(data)]
 
@@ -80,6 +112,14 @@ class NetworkGraph(QWidget):
                 line.lineTo(p)
             painter.setPen(QPen(QColor(color_hex), 1.5, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
             painter.drawPath(line)
+
+            # Ponto de hover
+            if self._hover_i >= 0:
+                hp = points[self._hover_i]
+                painter.setPen(QPen(QColor(color_hex), 2))
+                painter.setBrush(QColor(color_hex))
+                painter.drawEllipse(hp, 4, 4)
+                painter.setBrush(Qt.NoBrush)
 
         draw_series(self._download, BW_CYAN,  alpha_fill=35)
         draw_series(self._upload,   BW_GREEN, alpha_fill=25)
@@ -106,6 +146,7 @@ class NetworkWidget(QWidget):
 
         # Gráfico
         self._graph = NetworkGraph()
+        self._graph.column_hovered.connect(self._on_hover)
         root.addWidget(self._graph, stretch=1)
 
         # Legenda inferior
@@ -143,6 +184,16 @@ class NetworkWidget(QWidget):
 
         root.addLayout(legend)
 
+    def _on_hover(self, index: int, upload: float, download: float):
+        if index == -1:
+            self._dn_val.setText(f"↓  {self._cur_down:.1f} MB/s")
+            self._up_val.setText(f"↑  {self._cur_up:.1f} MB/s")
+        else:
+            ago    = (MAX_POINTS - 1 - index) * 5
+            suffix = f"  ({ago}s before)" if ago > 0 else "  (now)"
+            self._dn_val.setText(f"↓  {download:.1f} MB/s{suffix}")
+            self._up_val.setText(f"↑  {upload:.1f} MB/s{suffix}")
+            
     def push(self, upload_mbps: float, download_mbps: float):
         self._cur_up, self._cur_down = upload_mbps, download_mbps
         self._graph.push(upload_mbps, download_mbps)
