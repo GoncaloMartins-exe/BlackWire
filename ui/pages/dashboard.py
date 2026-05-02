@@ -1,7 +1,10 @@
-from PySide6.QtCore import Qt, QRectF
+from PySide6.QtCore import Qt, QRectF, QPointF, QTimer
 from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel
-from PySide6.QtGui import QPainter, QPen, QColor, QFont
+from PySide6.QtGui import QPainter, QPen, QColor, QFont, QPainterPath, QLinearGradient
 from ui.widgets.helper import *
+from collections import deque
+from ui.widgets.network_widget import NetworkWidget
+import random
 
 class CircularGauge(QWidget):
 
@@ -220,6 +223,21 @@ class DashboardPage(QWidget):
             gauges_layout.addWidget(col, stretch=1)
         
         root.addWidget(gauges_widget)
+        root.addSpacing(12)
+
+        # ===========================================================================
+        # Network card
+        # ===========================================================================
+        self._network = NetworkWidget()
+        self._network.setStyleSheet(f"""
+            QWidget {{
+                background-color: rgba(255, 255, 255, 5);
+                border: 1px solid rgba(255,255,255,10);
+                border-radius: 8px;
+                p
+            }}
+        """)
+        root.addWidget(self._network, stretch=2)
 
         # ===========================================================================
         # Service cards
