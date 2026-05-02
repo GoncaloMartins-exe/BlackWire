@@ -9,6 +9,8 @@ MAX_POINTS = 13  # 13 × 5s = 60s de histórico
 
 class NetworkGraph(QWidget):
 
+    # Emite (index, upload_mbps, download_mbps) ao fazer hover numa coluna
+    # index == -1 significa que o rato saiu - repor valores actuais
     column_hovered = Signal(int, float, float)
 
     def __init__(self, parent=None):
@@ -16,7 +18,7 @@ class NetworkGraph(QWidget):
         self._upload   = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
         self._download = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
         self._peak     = 1.0
-        self._hover_i  = -1
+        self._hover_i  = -1          # coluna actualmente sob o cursor
         self.setMinimumHeight(80)
         self.setMouseTracking(True)
 
@@ -26,6 +28,9 @@ class NetworkGraph(QWidget):
         self._peak = max(1.0, max(self._upload), max(self._download))
         self.update()
 
+    # ==================================================================
+    # Eventos de rato
+    # ==================================================================
     def mouseMoveEvent(self, event):
         w = self.width()
         pad_l, pad_r = 8, 8
@@ -35,7 +40,9 @@ class NetworkGraph(QWidget):
         i = max(0, min(MAX_POINTS - 1, i))
         if i != self._hover_i:
             self._hover_i = i
-            self.column_hovered.emit(i, list(self._upload)[i], list(self._download)[i])
+            up_list = list(self._upload)
+            dn_list = list(self._download)
+            self.column_hovered.emit(i, up_list[i], dn_list[i])
             self.update()
 
     def leaveEvent(self, event):
@@ -43,6 +50,9 @@ class NetworkGraph(QWidget):
         self.column_hovered.emit(-1, 0.0, 0.0)
         self.update()
 
+    # ==================================================================
+    # Pintura
+    # ==================================================================
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -66,7 +76,7 @@ class NetworkGraph(QWidget):
             painter.setFont(QFont("Segoe UI", 8))
             painter.drawText(QRectF(w - pad_r - 52, gy - 10, 50, 14), Qt.AlignRight, lbl)
 
-        # Eixo X
+        # Marcas de tempo eixo X
         painter.setPen(QColor("#334155"))
         painter.setFont(QFont("Segoe UI", 8))
         for i, label in [
@@ -79,7 +89,7 @@ class NetworkGraph(QWidget):
                 Qt.AlignCenter, label
             )
 
-        # Linha vertical de hover
+        # Linha de hover vertical
         if self._hover_i >= 0:
             hx = x_of(self._hover_i)
             pen_h = QPen(QColor("#ffffff"), 1, Qt.DashLine)
@@ -88,10 +98,11 @@ class NetworkGraph(QWidget):
             painter.setOpacity(0.25)
             painter.drawLine(QPointF(hx, pad_t), QPointF(hx, h - pad_b))
             painter.setOpacity(1.0)
-        
-        def draw_series(data, color_hex, alpha_fill):
+
+        def draw_series(data, color_hex, alpha_fill=40):
             points = [QPointF(x_of(i), y_of(v)) for i, v in enumerate(data)]
 
+            # Área preenchida
             path = QPainterPath()
             path.moveTo(points[0].x(), h - pad_b)
             for p in points:
@@ -106,6 +117,7 @@ class NetworkGraph(QWidget):
             grad.setColorAt(1, c2)
             painter.fillPath(path, grad)
 
+            # Linha
             line = QPainterPath()
             line.moveTo(points[0])
             for p in points[1:]:
@@ -132,17 +144,51 @@ class NetworkWidget(QWidget):
         super().__init__(parent)
         self.setAttribute(Qt.WA_StyledBackground, True)
 
+        # Valores actuais (usados para repor a legenda ao sair do hover)
         self._cur_up   = 0.0
         self._cur_down = 0.0
+        self._cur_lat  = None   # ms ou None se desconhecido
 
         root = QVBoxLayout(self)
         root.setContentsMargins(24, 20, 24, 18)
         root.setSpacing(10)
 
-        # Título
-        root.addWidget(
+        # Header: título + interface
+        header = QHBoxLayout()
+        header.setContentsMargins(0, 0, 0, 0)
+        header.setSpacing(0)
+
+        header.addWidget(
             make_label("NETWORK I/O", color=BW_TEXT_DIM, size=10, letter_spacing="1.5px")
         )
+        header.addStretch()
+
+        # Badge da interface (ex: "eth0" ou "wlan0")
+        self._iface_badge = QWidget()
+        self._iface_badge.setAttribute(Qt.WA_StyledBackground, True)
+        self._iface_badge.setStyleSheet("""
+            QWidget {
+                background-color: rgba(255,255,255,8);
+                border: 1px solid rgba(255,255,255,15);
+                border-radius: 5px;
+            }
+        """)
+        badge_layout = QHBoxLayout(self._iface_badge)
+        badge_layout.setContentsMargins(8, 3, 8, 3)
+        badge_layout.setSpacing(5)
+
+        # Ícone: ponto colorido (verde = com fio, azul = wireless)
+        self._iface_dot = QWidget()
+        self._iface_dot.setFixedSize(6, 6)
+        self._iface_dot.setAttribute(Qt.WA_StyledBackground, True)
+        self._iface_dot.setStyleSheet("background-color: #22c55e; border-radius: 3px; border: none;")
+
+        self._iface_label = make_label("—", color=BW_TEXT_DIM, size=10)
+        badge_layout.addWidget(self._iface_dot)
+        badge_layout.addWidget(self._iface_label)
+        header.addWidget(self._iface_badge)
+
+        root.addLayout(header)
 
         # Gráfico
         self._graph = NetworkGraph()
@@ -154,6 +200,7 @@ class NetworkWidget(QWidget):
         legend.setContentsMargins(0, 4, 0, 0)
         legend.setSpacing(0)
 
+        # Download
         dn_col = QWidget(); dn_col.setStyleSheet("background: transparent; border: none;")
         dn_l = QVBoxLayout(dn_col); dn_l.setContentsMargins(0,0,0,0); dn_l.setSpacing(1)
         dn_l.setAlignment(Qt.AlignLeft)
@@ -162,6 +209,7 @@ class NetworkWidget(QWidget):
         dn_l.addWidget(self._dn_val); dn_l.addWidget(self._dn_lbl)
         legend.addWidget(dn_col, stretch=1)
 
+        # Upload
         up_col = QWidget(); up_col.setStyleSheet("background: transparent; border: none;")
         up_l = QVBoxLayout(up_col); up_l.setContentsMargins(0,0,0,0); up_l.setSpacing(1)
         up_l.setAlignment(Qt.AlignCenter)
@@ -172,6 +220,7 @@ class NetworkWidget(QWidget):
         up_l.addWidget(self._up_val); up_l.addWidget(self._up_lbl)
         legend.addWidget(up_col, stretch=1)
 
+        # Latência
         lat_col = QWidget(); lat_col.setStyleSheet("background: transparent; border: none;")
         lat_l = QVBoxLayout(lat_col); lat_l.setContentsMargins(0,0,0,0); lat_l.setSpacing(1)
         lat_l.setAlignment(Qt.AlignRight)
@@ -184,18 +233,49 @@ class NetworkWidget(QWidget):
 
         root.addLayout(legend)
 
+    # ------------------------------------------------------------------
+    # Slots
+    # ------------------------------------------------------------------
     def _on_hover(self, index: int, upload: float, download: float):
         if index == -1:
-            self._dn_val.setText(f"↓  {self._cur_down:.1f} MB/s")
-            self._up_val.setText(f"↑  {self._cur_up:.1f} MB/s")
+            # Repor valores actuais
+            self._update_legend(self._cur_up, self._cur_down, self._cur_lat, hover=False)
         else:
-            ago    = (MAX_POINTS - 1 - index) * 5
+            offset = MAX_POINTS - 1 - index          # quantos segundos atrás
+            ago    = offset * 5
             suffix = f"  ({ago}s before)" if ago > 0 else "  (now)"
             self._dn_val.setText(f"↓  {download:.1f} MB/s{suffix}")
             self._up_val.setText(f"↑  {upload:.1f} MB/s{suffix}")
-            
-    def push(self, upload_mbps: float, download_mbps: float):
-        self._cur_up, self._cur_down = upload_mbps, download_mbps
+            self._dn_lbl.setText("Download")
+            self._up_lbl.setText("Upload")
+
+    def _update_legend(self, up: float, down: float, lat_ms, hover=False):
+        self._dn_val.setText(f"↓  {down:.1f} MB/s")
+        self._up_val.setText(f"↑  {up:.1f} MB/s")
+        self._dn_lbl.setText("Download")
+        self._up_lbl.setText("Upload")
+        if lat_ms is not None:
+            self._lat_val.setText(f"{lat_ms:.0f} ms")
+            color = BW_GREEN if lat_ms < 30 else (BW_CYAN if lat_ms < 80 else "#f59e0b")
+            self._lat_val.setStyleSheet(f"color: {color}; font-size: 13px; font-weight: bold; background: transparent;")
+        else:
+            self._lat_val.setText("— ms")
+
+    # ------------------------------------------------------------------
+    # API pública
+    # ------------------------------------------------------------------
+    def push(self, upload_mbps: float, download_mbps: float,
+             iface: str = "", lat_ms: float = None):
+        
+        self._cur_up, self._cur_down, self._cur_lat = upload_mbps, download_mbps, lat_ms
         self._graph.push(upload_mbps, download_mbps)
-        self._dn_val.setText(f"↓  {download_mbps:.1f} MB/s")
-        self._up_val.setText(f"↑  {upload_mbps:.1f} MB/s")
+        self._update_legend(upload_mbps, download_mbps, lat_ms)
+
+        if iface:
+            self._iface_label.setText(iface)
+            
+            is_wireless = iface.startswith("w") # Wireless se o nome começar por 'w', com fio nos restantes
+            dot_color   = BW_CYAN if is_wireless else "#22c55e"
+            self._iface_dot.setStyleSheet(
+                f"background-color: {dot_color}; border-radius: 3px; border: none;"
+            )

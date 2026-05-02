@@ -133,6 +133,7 @@ class DashboardPage(QWidget):
         super().__init__(parent)
         self.setStyleSheet(f"background-color: {BW_BG};")
         self._setup_ui()
+        self._start_test_timer()    #apenas para testes
 
     def _setup_ui(self):
         root = QVBoxLayout(self)
@@ -268,3 +269,20 @@ class DashboardPage(QWidget):
     def _on_refresh(self):
         # tenho de ligar ao servidor aqui
         pass
+
+    def _start_test_timer(self):
+        self._test_tick = 0
+        self._test_timer = QTimer(self)
+        self._test_timer.setInterval(5000)
+        self._test_timer.timeout.connect(self._push_test_data)
+        self._test_timer.start()
+        self._push_test_data()
+
+    def _push_test_data(self):
+        import math
+        t = self._test_tick
+        up   = round(10 + 8  * math.sin(t * 0.4), 1)
+        down = round(40 + 30 * math.sin(t * 0.3 + 1.0), 1)
+        lat  = round(15 + 10 * math.sin(t * 0.5), 1)
+        self._network.push(up, down, iface="eth0", lat_ms=lat)
+        self._test_tick += 1
