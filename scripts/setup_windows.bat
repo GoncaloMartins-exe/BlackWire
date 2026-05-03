@@ -28,7 +28,7 @@ set PYTHON_EXE=
 
 for %%p in (python python3 py) do (
     for /f "delims=" %%i in ('where %%p 2^>nul') do (
-        echo %%i | findstr /i "msys mingw WindowsApps" >nul
+        echo %%i | findstr /i "msys mingw" >nul
         if errorlevel 1 (
             set PYTHON_EXE=%%i
             goto :python_found
