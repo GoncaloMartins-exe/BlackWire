@@ -12,6 +12,7 @@ class NetworkGraph(QWidget):
     # Emite (index, upload_mbps, download_mbps) ao fazer hover numa coluna
     # index == -1 significa que o rato saiu - repor valores actuais
     column_hovered = Signal(int, float, float)
+    pad_l, pad_r, pad_t, pad_b = 8, 52, 8, 20
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -33,9 +34,8 @@ class NetworkGraph(QWidget):
     # ==================================================================
     def mouseMoveEvent(self, event):
         w = self.width()
-        pad_l, pad_r = 8, 8
-        usable = w - pad_l - pad_r
-        x = event.position().x() - pad_l
+        usable = w - self.pad_l - self.pad_r
+        x = event.position().x() - self.pad_l
         i = int(round(x / usable * (MAX_POINTS - 1)))
         i = max(0, min(MAX_POINTS - 1, i))
         if i != self._hover_i:
@@ -58,23 +58,22 @@ class NetworkGraph(QWidget):
         painter.setRenderHint(QPainter.Antialiasing)
 
         w, h = self.width(), self.height()
-        pad_l, pad_r, pad_t, pad_b = 8, 8, 8, 20
 
         def x_of(i):
-            return pad_l + i * (w - pad_l - pad_r) / (MAX_POINTS - 1)
+            return self.pad_l + i * (w - self.pad_l - self.pad_r) / (MAX_POINTS - 1)
 
         def y_of(v):
-            return pad_t + (1.0 - v / self._peak) * (h - pad_t - pad_b)
+            return self.pad_t + (1.0 - v / self._peak) * (h - self.pad_t - self.pad_b)
 
         # Grid horizontal
         for frac in [0.25, 0.5, 0.75, 1.0]:
-            gy = pad_t + (1.0 - frac) * (h - pad_t - pad_b)
+            gy = self.pad_t + (1.0 - frac) * (h - self.pad_t - self.pad_b)
             painter.setPen(QPen(QColor("#1e2d40"), 1, Qt.SolidLine))
-            painter.drawLine(QPointF(pad_l, gy), QPointF(w - pad_r, gy))
+            painter.drawLine(QPointF(self.pad_l, gy), QPointF(w - self.pad_r, gy))
             lbl = f"{self._peak * frac:.0f}" if frac < 1.0 else f"{self._peak:.0f} MB/s"
             painter.setPen(QColor("#334155"))
             painter.setFont(QFont("Segoe UI", 8))
-            painter.drawText(QRectF(w - pad_r - 52, gy - 10, 50, 14), Qt.AlignRight, lbl)
+            painter.drawText(QRectF(w - self.pad_r + 4, gy - 7, self.pad_r - 4, 14), Qt.AlignLeft, lbl)
 
         # Marcas de tempo eixo X
         painter.setPen(QColor("#334155"))
@@ -85,7 +84,7 @@ class NetworkGraph(QWidget):
             (MAX_POINTS - 1,  "now"),
         ]:
             painter.drawText(
-                QRectF(x_of(i) - 18, h - pad_b + 3, 36, 14),
+                QRectF(x_of(i) - 18, h - self.pad_b + 3, 36, 14),
                 Qt.AlignCenter, label
             )
 
@@ -96,7 +95,7 @@ class NetworkGraph(QWidget):
             pen_h.setDashPattern([3, 4])
             painter.setPen(pen_h)
             painter.setOpacity(0.25)
-            painter.drawLine(QPointF(hx, pad_t), QPointF(hx, h - pad_b))
+            painter.drawLine(QPointF(hx, self.pad_t), QPointF(hx, h - self.pad_b))
             painter.setOpacity(1.0)
 
         def draw_series(data, color_hex, alpha_fill=40):
@@ -104,13 +103,13 @@ class NetworkGraph(QWidget):
 
             # Área preenchida
             path = QPainterPath()
-            path.moveTo(points[0].x(), h - pad_b)
+            path.moveTo(points[0].x(), h - self.pad_b)
             for p in points:
                 path.lineTo(p)
-            path.lineTo(points[-1].x(), h - pad_b)
+            path.lineTo(points[-1].x(), h - self.pad_b)
             path.closeSubpath()
 
-            grad = QLinearGradient(0, pad_t, 0, h - pad_b)
+            grad = QLinearGradient(0, self.pad_t, 0, h - self.pad_b)
             c = QColor(color_hex); c.setAlpha(alpha_fill)
             grad.setColorAt(0, c)
             c2 = QColor(color_hex); c2.setAlpha(0)
