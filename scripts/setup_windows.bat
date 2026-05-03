@@ -68,7 +68,7 @@ if errorlevel 1 (
 
 echo  [OK] venv criado.
 
-call "%~dp0..\venv\Scripts\activate.bat"
+call "venv\Scripts\activate.bat"
 python -m pip install --upgrade pip --quiet
 echo  [OK] pip atualizado.
 echo.
@@ -79,31 +79,23 @@ echo.
 echo [3/3] A instalar dependencias...
 echo.
 
-echo   - PySide6 (interface grafica Qt6)...
-pip install PySide6 --quiet
-if errorlevel 1 ( echo  [ERRO] Falha ao instalar PySide6. && pause && exit /b 1 )
+if not exist requirements.txt (
+    echo  [ERRO] requirements.txt nao encontrado na raiz do projeto!
+    echo  Certifica-te que está ao lado do main.py
+    pause
+    exit /b 1
+)
 
-echo   - paramiko (SSH / SFTP)...
-pip install paramiko --quiet
-if errorlevel 1 ( echo  [ERRO] Falha ao instalar paramiko. && pause && exit /b 1 )
+echo   - A instalar a partir de requirements.txt...
+pip install -r requirements.txt --quiet
+if errorlevel 1 (
+    echo  [ERRO] Falha ao instalar dependencias.
+    pause
+    exit /b 1
+)
 
-echo   - pyqtgraph (graficos de monitorizacao)...
-pip install pyqtgraph --quiet
-if errorlevel 1 ( echo  [ERRO] Falha ao instalar pyqtgraph. && pause && exit /b 1 )
-
-echo   - cryptography (dependencia do paramiko)...
-pip install cryptography --quiet
-if errorlevel 1 ( echo  [ERRO] Falha ao instalar cryptography. && pause && exit /b 1 )
-
-echo   - pyinstaller (empacotar em .exe mais tarde)...
-pip install pyinstaller --quiet
-if errorlevel 1 ( echo  [ERRO] Falha ao instalar pyinstaller. && pause && exit /b 1 )
-
-:: Guardar versoes no requirements.txt
-pip freeze > requirements.txt
 echo.
-echo  [OK] Todas as dependencias instaladas.
-echo  [OK] requirements.txt atualizado com versoes exatas.
+echo  [OK] Dependencias instaladas com sucesso.
 echo.
 
 :: -----------------------------------------------
