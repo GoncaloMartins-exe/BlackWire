@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QFont
 from ui.pages.dashboard import DashboardPage
+from ui.pages.home import HomePage
 from ui.widgets.helper import *
 
 
@@ -91,6 +92,9 @@ class MainWindow(QMainWindow):
                            QMainWindow {{ background-color: {BW_BG}; }}
                            """)
         
+        self._home_page = HomePage()
+        self._home_page.server_selected.connect(self._on_server_selected)
+
         root = QWidget()
         root.setStyleSheet(f"background-color: {BW_BG};")
         self.setCentralWidget(root)
@@ -117,15 +121,25 @@ class MainWindow(QMainWindow):
         # ===========================================================================
         # Logo
         # ===========================================================================
-        logo = make_hbox(
-            load_image("LogoBlackWire.png", 36, 36),
-            make_label("BLACKWIRE", color=BW_CYAN, size=13, bold=True, letter_spacing="2px"),
-            margins=(16, 0, 16, 0),
-            spacing=10,
-        )
-        logo.setFixedHeight(72)
-        layout.addWidget(logo)
+        logo_widget = QWidget()
+        logo_widget.setFixedHeight(72)
+        logo_widget.setCursor(Qt.PointingHandCursor)
+        logo_widget.setAttribute(Qt.WA_StyledBackground, True)
+        logo_widget.setObjectName("LogoArea")
+        logo_widget.setStyleSheet("""
+            QWidget#LogoArea { background: transparent; }
+            QWidget#LogoArea:hover { background-color: rgba(255,255,255,5); }
+        """)
+        logo_widget.mousePressEvent = lambda e: self._navigate("Home")
 
+        ll = QHBoxLayout(logo_widget)
+        ll.setContentsMargins(16, 0, 16, 0)
+        ll.setSpacing(10)
+        ll.addWidget(load_image("LogoBlackWire.png", 36, 36))
+        ll.addWidget(make_label("BLACKWIRE", color=BW_CYAN, size=13, bold=True, letter_spacing="2px"))
+        ll.addStretch()
+
+        layout.addWidget(logo_widget)
         layout.addWidget(make_separator())
         layout.addSpacing(12)
 
@@ -146,7 +160,8 @@ class MainWindow(QMainWindow):
             layout.addWidget(btn)
             self._sidebar_buttons.append(btn)
 
-        self._sidebar_buttons[0].set_active(True)
+        for btn in self._sidebar_buttons:
+            btn.set_active(False)
 
         layout.addStretch()
 
@@ -163,6 +178,7 @@ class MainWindow(QMainWindow):
         self._stack.setStyleSheet(f"background-color: {BW_BG};")
 
         self._pages = {
+            "Home":      self._home_page,
             "Dashboard": DashboardPage(),
             "Logs":      self._placeholder("Logs"),
             "Files":     self._placeholder("Files"),
@@ -171,6 +187,8 @@ class MainWindow(QMainWindow):
 
         for page in self._pages.values():
             self._stack.addWidget(page)
+
+        self._stack.setCurrentWidget(self._home_page)
 
         return self._stack
 
@@ -198,3 +216,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(make_label("Em breve...", color=BW_CYAN, size=12, letter_spacing="2px", align=Qt.AlignCenter))
 
         return page
+    
+    def _on_server_selected(self, server: dict):
+        self._navigate("Dashboard")
