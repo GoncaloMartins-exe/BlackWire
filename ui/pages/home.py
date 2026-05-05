@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QGridLayout, QLineEdit, QSizePolicy
 )
 from ui.widgets.helper import *
+from ui.widgets.add_server_widget import AddServerForm, _ADD_BTN_STYLE
 
 _SERVERS: list[dict] = [
     {"name": "Production", "host": "192.168.1.10", "user": "root", "auth": "key"},
@@ -138,32 +139,27 @@ class HomePage(QWidget):
         # =========================================================
         self._add_btn = QPushButton("+  Add server")
         self._add_btn.setCursor(Qt.PointingHandCursor)
-        self._add_btn.setStyleSheet(f"""
-            QPushButton {{
-                background-color: rgba(255, 255, 255, 15);
-                border: 1px solid rgba(255, 255, 255, 25);
-                border-radius: 8px;
-                color: {BW_TEXT_DIM};
-                font-size: 11px;
-                padding: 5px 14px;
-                margin-left: 12px;
-            }}
-            QPushButton:hover {{
-                background-color: rgba(255, 255, 255, 20);
-                color: {BW_TEXT};
-            }}
-        """)
-
+        self._add_btn.setStyleSheet(_ADD_BTN_STYLE)
         self._add_btn.clicked.connect(self._on_add_clicked)
 
         header.addWidget(self._add_btn)
 
         root.addLayout(header)
-        root.addSpacing(28)
+        root.addSpacing(20)
 
-        # =========================================================
-        # Scroll
-        # =========================================================
+        # ======================================================================
+        # Inline form (hidden by default)
+        # ======================================================================
+        self._form = AddServerForm()
+        self._form.submitted.connect(self._on_server_submitted)
+        self._form.cancelled.connect(self._hide_form)
+        self._form.setVisible(False)
+        root.addWidget(self._form)
+        root.addSpacing(20)
+
+        # ======================================================================
+        # Scroll / grid
+        # ======================================================================
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QScrollArea.NoFrame)
@@ -212,6 +208,26 @@ class HomePage(QWidget):
 
         self._refresh_grid()
 
+    # ======================================================================
+    # Form
+    # ======================================================================
+    def _on_add_clicked(self):
+        self._form.clear()
+        self._form.setVisible(True)
+        self._add_btn.setEnabled(False)
+
+    def _hide_form(self):
+        self._form.setVisible(False)
+        self._add_btn.setEnabled(True)
+
+    def _on_server_submitted(self, server: dict):
+        _SERVERS.append(server)
+        self._refresh_grid()
+        self._hide_form()
+
+    # ======================================================================
+    # Grid
+    # ======================================================================
     def _refresh_grid(self):
         while self._grid.count():
             item = self._grid.takeAt(0)
@@ -229,6 +245,3 @@ class HomePage(QWidget):
         if server in _SERVERS:
             _SERVERS.remove(server)
             self._refresh_grid()
-
-    def _on_add_clicked(self):
-        print("Add server clicked")  # placeholder
