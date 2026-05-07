@@ -339,9 +339,7 @@ class AddServerForm(QWidget):
         return col, lbl
 
     def clear(self):
-        self._name.clear()
-        self._host.clear()
-        self._user.clear()
-        self._auth.setCurrentIndex(0)
+        for child in self.findChildren(QLineEdit):
+            child.clear()
         for field in (self._name, self._host, self._user):
             field.setStyleSheet(_INPUT_STYLE)
