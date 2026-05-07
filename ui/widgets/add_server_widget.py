@@ -111,6 +111,7 @@ class AddServerForm(QWidget):
         fields_row = QHBoxLayout()
         fields_row.setSpacing(12)
         fields_row.setContentsMargins(0, 0, 0, 0)
+        fields_row.setAlignment(Qt.AlignBottom)
 
         self._name = self._make_input("e.g. Production")
         self._host = self._make_input("e.g. 192.168.1.10")
@@ -184,6 +185,8 @@ class AddServerForm(QWidget):
 
         self._auth_stack = QStackedWidget()
         self._auth_stack.setStyleSheet("background: transparent;")
+        self._auth_stack.setFixedHeight(34) 
+        self._auth_stack.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self._auth_stack.addWidget(self._password)
         self._auth_stack.addWidget(self.key_widget)
 

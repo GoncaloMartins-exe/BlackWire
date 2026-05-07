@@ -5,24 +5,7 @@ from PySide6.QtWidgets import (
 )
 from ui.widgets.helper import *
 from ui.widgets.add_server_widget import AddServerForm, _ADD_BTN_STYLE
-
-_SERVERS: list[dict] = [
-    {"name": "Production", "host": "192.168.1.10", "user": "root", "auth": "key"},
-    {"name": "Staging",    "host": "192.168.1.20", "user": "ubuntu", "auth": "password"},
-    {"name": "Dev",        "host": "127.0.0.1", "user": "dev", "auth": "key"},
-    {"name": "Production", "host": "192.168.1.10", "user": "root", "auth": "key"},
-    {"name": "Staging",    "host": "192.168.1.20", "user": "ubuntu", "auth": "password"},
-    {"name": "Dev",        "host": "127.0.0.1", "user": "dev", "auth": "key"},
-    {"name": "Production", "host": "192.168.1.10", "user": "root", "auth": "key"},
-    {"name": "Staging",    "host": "192.168.1.20", "user": "ubuntu", "auth": "password"},
-    {"name": "Dev",        "host": "127.0.0.1", "user": "dev", "auth": "key"},
-    {"name": "Production", "host": "192.168.1.10", "user": "root", "auth": "key"},
-    {"name": "Staging",    "host": "192.168.1.20", "user": "ubuntu", "auth": "password"},
-    {"name": "Dev",        "host": "127.0.0.1", "user": "dev", "auth": "key"},
-    {"name": "Production", "host": "192.168.1.10", "user": "root", "auth": "key"},
-    {"name": "Staging",    "host": "192.168.1.20", "user": "ubuntu", "auth": "password"},
-    {"name": "Dev",        "host": "127.0.0.1", "user": "dev", "auth": "key"},
-]
+from core.storage import ServerManager
 
 
 class ServerCard(QWidget):
@@ -113,6 +96,10 @@ class HomePage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setStyleSheet(f"background-color: {BW_BG};")
+
+        self.storage = ServerManager()
+        self._servers = self.storage.load_servers()
+
         self._setup_ui()
 
     def _setup_ui(self):
@@ -221,7 +208,8 @@ class HomePage(QWidget):
         self._add_btn.setEnabled(True)
 
     def _on_server_submitted(self, server: dict):
-        _SERVERS.append(server)
+        self._servers.append(server)
+        self.storage.save_all(self._servers)
         self._refresh_grid()
         self._hide_form()
 
@@ -235,13 +223,15 @@ class HomePage(QWidget):
                 item.widget().deleteLater()
 
         cols = 3
-        for i, server in enumerate(_SERVERS):
+        for i, server in enumerate(self._servers):
             card = ServerCard(server)
             card.clicked.connect(self.server_selected.emit)
             card.delete_req.connect(self._delete_server)
             self._grid.addWidget(card, i // cols, i % cols)
 
     def _delete_server(self, server: dict):
-        if server in _SERVERS:
-            _SERVERS.remove(server)
+        if server in self._servers:
+            self.storage.delete_server_creds(server)
+            self._servers.remove(server)
+            self.storage.save_all(self._servers)
             self._refresh_grid()
