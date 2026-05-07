@@ -6,6 +6,10 @@ shiboken6==6.11.0
 pyqtgraph==0.14.0
 numpy==2.4.4
 
+# ── Armazenamento / Credenciais ─────────────────────────────────
+keyring==25.2.1
+platformdirs==4.2.2
+
 # ── SSH / ligação ao servidor ───────────────────────────────────
 paramiko==4.0.0
 cryptography==46.0.7
@@ -28,3 +32,5 @@ pywin32-ctypes==0.2.3 ; sys_platform == "win32"
 
 # ── Linux only ──────────────────────────────────────────────────
 setuptools==82.0.1 ; sys_platform == "linux"
+SecretStorage==3.3.3 ; sys_platform == "linux"
+jeepney==0.8.0 ; sys_platform == "linux"
