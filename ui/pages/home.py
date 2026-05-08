@@ -1,12 +1,13 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtWidgets import (
     QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QScrollArea,
     QGridLayout
 )
 from ui.widgets.helper import *
 from ui.widgets.add_server_widget import AddServerForm, _ADD_BTN_STYLE
-from ui.widgets.server_card import ServerCard
+from ui.widgets.server_card import ServerCard, server_key
 from core.storage import ServerManager
+from core.server_checker import ServerChecker
 
 
 class HomePage(QWidget):
@@ -19,6 +20,13 @@ class HomePage(QWidget):
 
         self.storage = ServerManager()
         self._servers = self.storage.load_servers()
+
+        self._cards = {}
+        self._checker = ServerChecker()
+
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._refresh_server_status)
+        self._timer.start(30000)
 
         self._setup_ui()
 
@@ -137,6 +145,8 @@ class HomePage(QWidget):
     # Grid
     # ======================================================================
     def _refresh_grid(self):
+        self._cards.clear()
+
         while self._grid.count():
             item = self._grid.takeAt(0)
             if item.widget():
@@ -145,9 +155,15 @@ class HomePage(QWidget):
         cols = 3
         for i, server in enumerate(self._servers):
             card = ServerCard(server)
+
+            key = server_key(server)
+            self._cards[key] = card
+
             card.clicked.connect(self.server_selected.emit)
             card.delete_req.connect(self._delete_server)
             self._grid.addWidget(card, i // cols, i % cols)
+
+        self._refresh_server_status()
 
     def _delete_server(self, server: dict):
         if server in self._servers:
@@ -155,3 +171,26 @@ class HomePage(QWidget):
             self._servers.remove(server)
             self.storage.save_all(self._servers)
             self._refresh_grid()
+
+    def _refresh_server_status(self):
+        for server in self._servers:
+            key = server_key(server)
+
+            card = self._cards.get(key)
+            if card:
+                card.set_status("checking")
+
+            self._checker.check(
+                server,
+                key,
+                self._on_server_checked
+            )
+
+
+    def _on_server_checked(self, key: str, online: bool):
+        card = self._cards.get(key)
+
+        if not card:
+            return
+
+        card.set_status("online" if online else "offline")

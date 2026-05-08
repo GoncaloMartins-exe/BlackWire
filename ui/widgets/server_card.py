@@ -6,7 +6,7 @@ _STATUS_STYLES = {
     #              text         text color       bg color               border color
     "online":   ("● Online",   "#00cc88", "rgba(0,204,136,12)",   "rgba(0,204,136,55)"),
     "offline":  ("● Offline",  "#ff4466", "rgba(255,68,102,12)",  "rgba(255,68,102,55)"),
-    "checking": ("● —",        "#888899", "rgba(255,255,255,7)",  "rgba(255,255,255,25)"),
+    "checking": ("● Cheking",  "#888899", "rgba(255,255,255,7)",  "rgba(255,255,255,25)"),
 }
 
 
