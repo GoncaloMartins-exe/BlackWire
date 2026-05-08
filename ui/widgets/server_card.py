@@ -1,8 +1,19 @@
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout
-)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from ui.widgets.helper import *
+
+_STATUS_STYLES = {
+    #              text         text color       bg color               border color
+    "online":   ("● Online",   "#00cc88", "rgba(0,204,136,12)",   "rgba(0,204,136,55)"),
+    "offline":  ("● Offline",  "#ff4466", "rgba(255,68,102,12)",  "rgba(255,68,102,55)"),
+    "checking": ("● —",        "#888899", "rgba(255,255,255,7)",  "rgba(255,255,255,25)"),
+}
+
+
+def server_key(s: dict) -> str:
+    """Stable unique key for a server entry."""
+    return f"{s['name']}|{s['host']}|{s['user']}"
+
 
 class ServerCard(QWidget):
 
@@ -54,6 +65,10 @@ class ServerCard(QWidget):
 
         outer.addLayout(top)
 
+        bottom = QHBoxLayout()
+        bottom.setContentsMargins(0, 0, 0, 0)
+        bottom.setSpacing(0)
+
         auth_tag = make_label(
             "Password" if server.get("auth") == "password" else "Key",
             color=BW_TEXT_DIM, size=10
@@ -67,7 +82,32 @@ class ServerCard(QWidget):
                 color: {BW_TEXT_DIM};
             }}
         """)
-        outer.addWidget(auth_tag, alignment=Qt.AlignLeft)
+
+        self._status_badge = QLabel()
+        self._status_badge.setStyleSheet("background: transparent; border: none;")
+
+        bottom.addWidget(auth_tag, alignment=Qt.AlignLeft | Qt.AlignVCenter)
+        bottom.addStretch()
+        bottom.addWidget(self._status_badge, alignment=Qt.AlignRight | Qt.AlignVCenter)
+
+        outer.addLayout(bottom)
+
+        self.set_status("checking")
+
+    def set_status(self, state: str):
+        """state: 'online' | 'offline' | 'checking'"""
+        text, color, bg, border = _STATUS_STYLES.get(state, _STATUS_STYLES["checking"])
+        self._status_badge.setText(text)
+        self._status_badge.setStyleSheet(f"""
+            QLabel {{
+                background-color: {bg};
+                border: 1px solid {border};
+                border-radius: 4px;
+                padding: 2px 8px;
+                color: {color};
+                font-size: 10px;
+            }}
+        """)
 
     def _set_style(self, hover: bool):
         self.setStyleSheet(f"""
