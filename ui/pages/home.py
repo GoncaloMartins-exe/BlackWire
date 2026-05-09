@@ -23,6 +23,7 @@ class HomePage(QWidget):
 
         self._cards = {}
         self._checker = ServerChecker()
+        self._editing_server = None
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._refresh_server_status)
@@ -136,7 +137,23 @@ class HomePage(QWidget):
         self._add_btn.setEnabled(True)
 
     def _on_server_submitted(self, server: dict):
-        self._servers.append(server)
+        # =========================================================
+        # Editing existing server
+        # =========================================================
+        if self._editing_server:
+            idx = self._servers.index(self._editing_server)
+
+            self.storage.delete_server_creds(self._editing_server)
+
+            self._servers[idx] = server
+            self._editing_server = None
+
+        # =========================================================
+        # Adding new server
+        # =========================================================
+        else:
+            self._servers.append(server)
+
         self.storage.save_all(self._servers)
         self._refresh_grid()
         self._hide_form()
@@ -161,6 +178,7 @@ class HomePage(QWidget):
 
             card.clicked.connect(self.server_selected.emit)
             card.delete_req.connect(self._delete_server)
+            card.edit_req.connect(self._edit_server)
             self._grid.addWidget(card, i // cols, i % cols)
 
         self._refresh_server_status()
@@ -171,6 +189,14 @@ class HomePage(QWidget):
             self._servers.remove(server)
             self.storage.save_all(self._servers)
             self._refresh_grid()
+
+    def _edit_server(self, server: dict):
+        self._editing_server = server
+
+        self._form.set_data(server)
+        self._form.setVisible(True)
+
+        self._add_btn.setEnabled(False)
 
     def _refresh_server_status(self):
         for server in self._servers:

@@ -19,6 +19,7 @@ class ServerCard(QWidget):
 
     clicked    = Signal(dict)
     delete_req = Signal(dict)
+    edit_req   = Signal(dict)
 
     def __init__(self, server: dict, parent=None):
         super().__init__(parent)
@@ -52,16 +53,57 @@ class ServerCard(QWidget):
         ))
         top.addWidget(name_col, stretch=1)
 
+        actions = QWidget()
+        actions.setStyleSheet("background: transparent; border: none;")
+
+        actions_layout = QHBoxLayout(actions)
+        actions_layout.setContentsMargins(0, 0, 0, 0)
+        actions_layout.setSpacing(4)
+
+        # =========================================================
+        # Edit button
+        # =========================================================
+        edit_btn = make_label("EDIT", color=BW_TEXT_DIM, size=12)
+        edit_btn.setCursor(Qt.PointingHandCursor)
+        edit_btn.setFixedSize(24, 24)
+        edit_btn.setAlignment(Qt.AlignCenter)
+        edit_btn.setStyleSheet("""
+            QLabel {
+                background: transparent;
+                border: none;
+                border-radius: 4px;
+            }
+
+            QLabel:hover {
+                color: #55bbff;
+            }
+        """)
+        edit_btn.mousePressEvent = lambda e: self.edit_req.emit(self._server)
+
+        # =========================================================
+        # Delete button
+        # =========================================================
         del_btn = make_label("✕", color=BW_TEXT_DIM, size=12)
         del_btn.setCursor(Qt.PointingHandCursor)
         del_btn.setFixedSize(24, 24)
         del_btn.setAlignment(Qt.AlignCenter)
         del_btn.setStyleSheet("""
-            QLabel { background: transparent; border: none; border-radius: 4px; }
-            QLabel:hover { color: #ff4466; }
+            QLabel {
+                background: transparent;
+                border: none;
+                border-radius: 4px;
+            }
+
+            QLabel:hover {
+                color: #ff4466;
+            }
         """)
         del_btn.mousePressEvent = lambda e: self.delete_req.emit(self._server)
-        top.addWidget(del_btn, alignment=Qt.AlignTop)
+
+        actions_layout.addWidget(edit_btn)
+        actions_layout.addWidget(del_btn)
+
+        top.addWidget(actions, alignment=Qt.AlignTop)
 
         outer.addLayout(top)
 

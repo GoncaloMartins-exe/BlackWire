@@ -346,3 +346,15 @@ class AddServerForm(QWidget):
             child.clear()
         for field in (self._name, self._host, self._user):
             field.setStyleSheet(_INPUT_STYLE)
+
+    def set_data(self, server: dict):
+        self._name.setText(server.get("name", ""))
+        self._host.setText(server.get("host", ""))
+        self._user.setText(server.get("user", ""))
+
+        auth = server.get("auth", "password")
+        self._auth.setCurrentText(auth)
+        self._password.setText(server.get("password", ""))
+        self._key_path.setText(server.get("key_path", ""))
+
+        self._update_auth_visibility()
