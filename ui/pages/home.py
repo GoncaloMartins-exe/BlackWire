@@ -33,7 +33,7 @@ class HomePage(QWidget):
 
     def _setup_ui(self):
         root = QVBoxLayout(self)
-        root.setContentsMargins(48, 40, 48, 40)
+        root.setContentsMargins(48, 40, 64, 40)
         root.setSpacing(0)
 
         header = QHBoxLayout()
@@ -48,6 +48,7 @@ class HomePage(QWidget):
         ))
 
         header.addLayout(title_col)
+        header.setContentsMargins(0, 0, 16, 0)
         header.addStretch()
 
         # =========================================================
@@ -70,7 +71,11 @@ class HomePage(QWidget):
         self._form.submitted.connect(self._on_server_submitted)
         self._form.cancelled.connect(self._hide_form)
         self._form.setVisible(False)
-        root.addWidget(self._form)
+
+        form_layout = QHBoxLayout()
+        form_layout.setContentsMargins(0, 0, 16, 0)
+        form_layout.addWidget(self._form)
+        root.addLayout(form_layout)
         root.addSpacing(20)
 
         # ======================================================================
@@ -88,7 +93,7 @@ class HomePage(QWidget):
             QScrollBar:vertical {{
                 background: transparent;
                 width: 10px;
-                margin: 4px 0 4px 0;
+                margin: 4px 0 0 0;
             }}
 
             QScrollBar::handle:vertical {{
@@ -116,7 +121,7 @@ class HomePage(QWidget):
         container = QWidget()
         self._grid = QGridLayout(container)
         self._grid.setSpacing(16)
-        self._grid.setContentsMargins(0, 0, 12, 0)
+        self._grid.setContentsMargins(0, 0, 16, 0)
         self._grid.setAlignment(Qt.AlignTop)
 
         scroll.setWidget(container)
@@ -169,7 +174,7 @@ class HomePage(QWidget):
             if item.widget():
                 item.widget().deleteLater()
 
-        cols = 3
+        cols = 1
         for i, server in enumerate(self._servers):
             card = ServerCard(server)
 
