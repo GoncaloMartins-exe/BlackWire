@@ -30,9 +30,9 @@ class SSHClient:
             "hostname": self.host,
             "port": self.port,
             "username": self.username,
-            "timeout": 5,
-            "banner_timeout": 5,
-            "auth_timeout": 5,
+            "timeout": 1,
+            "banner_timeout": 1,
+            "auth_timeout": 1,
         }
 
         if self.key_path:

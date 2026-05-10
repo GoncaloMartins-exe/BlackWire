@@ -11,4 +11,6 @@ app.setWindowIcon(QIcon("assets/icons/LogoBlackWire"))
 window = MainWindow()
 window.show()
 
-app.exec()
+app.aboutToQuit.connect(window.on_quit)
+
+sys.exit(app.exec())

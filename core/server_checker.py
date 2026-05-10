@@ -14,8 +14,15 @@ class ServerCheckTask(QRunnable):
         self.key = key
         self.existing_client = existing_client
         self.signals = ServerCheckSignals()
+        self._cancelled = False
+
+    def cancel(self):
+        self._cancelled = True
 
     def run(self):
+        if self._cancelled:
+            return
+        
         # caso a ligação já exista
         if self.existing_client:
             try:
@@ -55,7 +62,13 @@ class ServerCheckTask(QRunnable):
                     pass
             client = None
 
-        self.signals.finished.emit(self.key, online, client)
+        if not self._cancelled:
+            self.signals.finished.emit(self.key, online, client)
+        elif client:
+            try:
+                client.close()
+            except Exception:
+                pass
 
 
 class ServerChecker:
@@ -100,3 +113,15 @@ class ServerChecker:
             self.connections.pop(key, None)
 
         callback(key, online)
+
+    def shutdown(self):
+        for task in self._tasks:
+            task.cancel()
+        self._tasks.clear()
+        self.pool.waitForDone(0)
+        for client in self.connections.values():
+            try:
+                client.close()
+            except Exception:
+                pass
+        self.connections.clear()

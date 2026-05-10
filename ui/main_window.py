@@ -219,3 +219,6 @@ class MainWindow(QMainWindow):
     
     def _on_server_selected(self, server: dict):
         self._navigate("Dashboard")
+
+    def on_quit(self):
+        self._home_page._checker.shutdown()
