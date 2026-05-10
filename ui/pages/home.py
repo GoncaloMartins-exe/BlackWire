@@ -221,7 +221,6 @@ class HomePage(QWidget):
                 self._on_server_checked
             )
 
-
     def _on_server_checked(self, key: str, online: bool):
         card = self._cards.get(key)
 

@@ -120,85 +120,7 @@ class ServerCard(QWidget):
 
         delete_layout.addWidget(delete_icon)
 
-        def on_delete(_e):
-
-            msg = QMessageBox(self)
-            msg.setWindowTitle("Delete Server")
-            msg.setText(
-                f"Are you sure you want to delete <b>{self._server['name']}</b>?"
-            )
-            msg.setIcon(QMessageBox.NoIcon)
-
-            # =========================================================
-            # Buttons
-            # =========================================================
-            yes_btn = msg.addButton("Delete", QMessageBox.AcceptRole)
-            no_btn = msg.addButton("Cancel", QMessageBox.RejectRole)
-
-            msg.setDefaultButton(no_btn)
-
-            # =========================================================
-            # Style
-            # =========================================================
-            msg.setStyleSheet(f"""
-                QMessageBox {{
-                    background-color: rgba(20, 20, 28, 255);
-                }}
-
-                QLabel {{
-                    color: {BW_TEXT};
-                    font-size: 12px;
-                    background: transparent;
-                    border: none;
-                }}
-
-                QMessageBox QLabel {{
-                    color: {BW_TEXT};
-                    background: transparent;
-                }}
-
-                QPushButton {{
-                    background-color: rgba(255,255,255,10);
-                    border: 1px solid rgba(255,255,255,16);
-                    border-radius: 8px;
-                    color: {BW_TEXT_DIM};
-                    min-width: 90px;
-                    min-height: 32px;
-                    padding: 4px 12px;
-                    font-size: 11px;
-                }}
-
-                QPushButton:hover {{
-                    background-color: rgba(255,255,255,16);
-                    color: {BW_TEXT};
-                }}
-            """)
-
-            # =========================================================
-            # Delete style
-            # =========================================================
-            yes_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: rgba(255,68,102,18);
-                    border: 1px solid rgba(255,68,102,60);
-                    color: #ff4466;
-                    font-weight: bold;
-                }
-
-                QPushButton:hover {
-                    background-color: rgba(255,68,102,28);
-                }
-            """)
-
-            msg.exec()
-
-            # =========================================================
-            # Action
-            # =========================================================
-            if msg.clickedButton() == yes_btn:
-                self.delete_req.emit(self._server)
-
-        delete_container.mousePressEvent = on_delete
+        delete_container.mousePressEvent = self._on_delete
 
         actions_layout.addWidget(edit_container)
         actions_layout.addWidget(delete_container)
@@ -235,6 +157,72 @@ class ServerCard(QWidget):
         outer.addLayout(bottom)
 
         self.set_status("checking")
+
+    def _on_delete(self, _e):
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Delete Server")
+        msg.setText(
+            f"Are you sure you want to delete <b>{self._server['name']}</b>?"
+        )
+        msg.setIcon(QMessageBox.NoIcon)
+
+        # =========================================================
+        # Buttons
+        # =========================================================
+        yes_btn = msg.addButton("Delete", QMessageBox.AcceptRole)
+        no_btn = msg.addButton("Cancel", QMessageBox.RejectRole)
+
+        msg.setDefaultButton(no_btn)
+
+        # =========================================================
+        # Style
+        # =========================================================
+        msg.setStyleSheet(f"""
+            QMessageBox {{
+                background-color: rgba(20, 20, 28, 255);
+            }}
+
+            QLabel {{
+                color: {BW_TEXT};
+                font-size: 12px;
+                background: transparent;
+                border: none;
+            }}
+
+            QMessageBox QLabel {{
+                color: {BW_TEXT};
+                background: transparent;
+            }}
+
+            QPushButton {{background-color: rgba(255,255,255,10); border: 1px solid rgba(255,255,255,16); border-radius: 8px; 
+                color: {BW_TEXT_DIM}; min-width: 90px; min-height: 32px; padding: 4px 12px; font-size: 11px;}}
+
+            QPushButton:hover {{background-color: rgba(255,255,255,16);color: {BW_TEXT};}}
+        """)
+
+        # =========================================================
+        # Delete button style
+        # =========================================================
+        yes_btn.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(255,68,102,18);
+                border: 1px solid rgba(255,68,102,60);
+                color: #ff4466;
+                font-weight: bold;
+            }
+
+            QPushButton:hover {
+                background-color: rgba(255,68,102,28);
+            }
+        """)
+
+        msg.exec()
+
+        # =========================================================
+        # Action
+        # =========================================================
+        if msg.clickedButton() == yes_btn:
+            self.delete_req.emit(self._server)
 
     def set_status(self, state: str):
         """state: 'online' | 'offline' | 'checking'"""
