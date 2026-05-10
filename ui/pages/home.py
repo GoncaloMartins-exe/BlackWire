@@ -23,7 +23,7 @@ class HomePage(QWidget):
 
         self._cards = {}
         self._checker = ServerChecker()
-        self._editing_server = None
+        self._editing_index = None
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._refresh_server_status)
@@ -128,6 +128,7 @@ class HomePage(QWidget):
     # Form
     # ======================================================================
     def _on_add_clicked(self):
+        self._editing_index = None
         self._form.clear()
         self._form.setVisible(True)
         self._add_btn.setEnabled(False)
@@ -140,13 +141,12 @@ class HomePage(QWidget):
         # =========================================================
         # Editing existing server
         # =========================================================
-        if self._editing_server:
-            idx = self._servers.index(self._editing_server)
+        if self._editing_index is not None:
 
-            self.storage.delete_server_creds(self._editing_server)
-
-            self._servers[idx] = server
-            self._editing_server = None
+            old_server = self._servers[self._editing_index]
+            self.storage.delete_server_creds(old_server)
+            self._servers[self._editing_index] = server
+            self._editing_index = None
 
         # =========================================================
         # Adding new server
@@ -185,13 +185,22 @@ class HomePage(QWidget):
 
     def _delete_server(self, server: dict):
         if server in self._servers:
+
+            if self._editing_index is not None:
+                try:
+                    if self._servers[self._editing_index] == server:
+                        self._editing_index = None
+                        self._hide_form()
+                except IndexError:
+                    pass
+
             self.storage.delete_server_creds(server)
             self._servers.remove(server)
             self.storage.save_all(self._servers)
             self._refresh_grid()
 
     def _edit_server(self, server: dict):
-        self._editing_server = server
+        self._editing_index = self._servers.index(server)
 
         self._form.set_data(server)
         self._form.setVisible(True)
