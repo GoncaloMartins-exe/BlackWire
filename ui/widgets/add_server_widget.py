@@ -86,7 +86,8 @@ class AddServerForm(QWidget):
         # ======================================================================
         title_row = QHBoxLayout()
         title_row.setContentsMargins(0, 0, 0, 0)
-        title_row.addWidget(make_label("New server", color=BW_TEXT, size=13, bold=True))
+        self._title = make_label("New server",color=BW_TEXT,size=13,bold=True)
+        title_row.addWidget(self._title)
         title_row.addStretch()
 
         close = make_label("✕", color=BW_TEXT_DIM, size=12)
@@ -342,12 +343,16 @@ class AddServerForm(QWidget):
         return col, lbl
 
     def clear(self):
+        self.set_edit_mode(False)
+
         for child in self.findChildren(QLineEdit):
             child.clear()
         for field in (self._name, self._host, self._user):
             field.setStyleSheet(_INPUT_STYLE)
 
     def set_data(self, server: dict):
+        self.set_edit_mode(True)
+        
         self._name.setText(server.get("name", ""))
         self._host.setText(server.get("host", ""))
         self._user.setText(server.get("user", ""))
@@ -358,3 +363,6 @@ class AddServerForm(QWidget):
         self._key_path.setText(server.get("key_path", ""))
 
         self._update_auth_visibility()
+
+    def set_edit_mode(self, editing: bool):
+        self._title.setText("Edit server" if editing else "New server")
