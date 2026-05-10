@@ -63,45 +63,67 @@ class ServerCard(QWidget):
         # =========================================================
         # Edit button
         # =========================================================
-        edit_btn = make_label("EDIT", color=BW_TEXT_DIM, size=12)
-        edit_btn.setCursor(Qt.PointingHandCursor)
-        edit_btn.setFixedSize(24, 24)
-        edit_btn.setAlignment(Qt.AlignCenter)
-        edit_btn.setStyleSheet("""
-            QLabel {
-                background: transparent;
-                border: none;
+        edit_container = QWidget()
+        edit_container.setCursor(Qt.PointingHandCursor)
+        edit_container.setStyleSheet(f"""
+            QWidget {{
+                background-color: rgba(255,255,255,8);
+                border: 1px solid rgba(255,255,255,12);
                 border-radius: 4px;
-            }
+            }}
 
-            QLabel:hover {
-                color: #55bbff;
-            }
+            QWidget:hover {{
+                border: 1px solid rgba(85,187,255,120);
+                background-color: rgba(85,187,255,12);
+            }}
         """)
-        edit_btn.mousePressEvent = lambda e: self.edit_req.emit(self._server)
+
+        edit_layout = QHBoxLayout(edit_container)
+        edit_layout.setContentsMargins(8, 3, 8, 3)
+        edit_layout.setSpacing(6)
+
+        edit_icon = load_image("edit.png", 10, 10)
+        edit_icon.setStyleSheet("background: transparent; border: none;")
+
+        edit_text = make_label("Edit", color=BW_TEXT_DIM, size=10)
+        edit_text.setStyleSheet("background: transparent; border: none;")
+
+        edit_layout.addWidget(edit_icon)
+        edit_layout.addWidget(edit_text)
+
+        edit_container.mousePressEvent = lambda e: self.edit_req.emit(self._server)
 
         # =========================================================
         # Delete button
         # =========================================================
-        del_btn = make_label("✕", color=BW_TEXT_DIM, size=12)
-        del_btn.setCursor(Qt.PointingHandCursor)
-        del_btn.setFixedSize(24, 24)
-        del_btn.setAlignment(Qt.AlignCenter)
-        del_btn.setStyleSheet("""
-            QLabel {
-                background: transparent;
-                border: none;
+        delete_container = QWidget()
+        delete_container.setCursor(Qt.PointingHandCursor)
+        delete_container.setStyleSheet(f"""
+            QWidget {{
+                background-color: rgba(255,255,255,8);
+                border: 1px solid rgba(255,255,255,12);
                 border-radius: 4px;
-            }
+            }}
 
-            QLabel:hover {
-                color: #ff4466;
-            }
+            QWidget:hover {{
+                border: 1px solid rgba(255,68,102,120);
+                background-color: rgba(255,68,102,12);
+            }}
         """)
-        del_btn.mousePressEvent = lambda e: self.delete_req.emit(self._server)
 
-        actions_layout.addWidget(edit_btn)
-        actions_layout.addWidget(del_btn)
+        delete_layout = QHBoxLayout(delete_container)
+        delete_layout.setContentsMargins(8, 3, 8, 3)
+        delete_layout.setSpacing(0)
+
+        delete_icon = load_image("delete.png", 8, 8)
+        delete_icon.setStyleSheet("background: transparent; border: none;")
+
+        delete_layout.addWidget(delete_icon)
+
+        delete_container.mousePressEvent = lambda e: self.delete_req.emit(self._server)
+
+        actions_layout.addWidget(edit_container)
+        actions_layout.addWidget(delete_container)
 
         top.addWidget(actions, alignment=Qt.AlignTop)
 
