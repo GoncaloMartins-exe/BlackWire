@@ -242,11 +242,11 @@ class AddServerForm(QWidget):
         """)
         cancel_btn.clicked.connect(self.cancelled.emit)
 
-        add_btn = QPushButton("Add server")
-        add_btn.setCursor(Qt.PointingHandCursor)
-        add_btn.setFixedHeight(32)
+        self._submit_btn = QPushButton("Add server")
+        self._submit_btn.setCursor(Qt.PointingHandCursor)
+        self._submit_btn.setFixedHeight(32)
 
-        add_btn.setStyleSheet(f"""
+        self._submit_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: {BW_CYAN};
                 border: none;
@@ -261,10 +261,10 @@ class AddServerForm(QWidget):
                 background-color: rgba(0, 200, 200, 200);
             }}
         """)
-        add_btn.clicked.connect(self._on_submit)
+        self._submit_btn.clicked.connect(self._on_submit)
 
         btn_row.addWidget(cancel_btn)
-        btn_row.addWidget(add_btn)
+        btn_row.addWidget(self._submit_btn)
 
         outer.addLayout(btn_row)
 
@@ -352,7 +352,7 @@ class AddServerForm(QWidget):
 
     def set_data(self, server: dict):
         self.set_edit_mode(True)
-        
+
         self._name.setText(server.get("name", ""))
         self._host.setText(server.get("host", ""))
         self._user.setText(server.get("user", ""))
@@ -366,3 +366,4 @@ class AddServerForm(QWidget):
 
     def set_edit_mode(self, editing: bool):
         self._title.setText("Edit server" if editing else "New server")
+        self._submit_btn.setText("Confirm" if editing else "Add server")
