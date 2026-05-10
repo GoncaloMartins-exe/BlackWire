@@ -79,14 +79,18 @@ class ServerChecker:
         self.pool.setMaxThreadCount(10)
         self.connections: dict = {}
         self._tasks: set = set()          # mantém tasks vivas até terminarem
+        self._running = set()
 
-    def check(self, server: dict, key: str, callback):
+    def check(self, server: dict, key: str, callback):        
+        self._running.add(key)
         existing = self.connections.get(key)
         task = ServerCheckTask(server, key, existing_client=existing)
         self._tasks.add(task)
+
         task.signals.finished.connect(
             lambda k, online, client: self._on_checked(k, online, client, callback, task)
         )
+
         self.pool.start(task)
 
     def get_connection(self, key: str):
@@ -99,6 +103,7 @@ class ServerChecker:
 
     def _on_checked(self, key: str, online: bool, client, callback, task):
         self._tasks.discard(task)
+        self._running.discard(key)
 
         if online:
             if client is not self.connections.get(key):
@@ -125,3 +130,6 @@ class ServerChecker:
             except Exception:
                 pass
         self.connections.clear()
+
+    def reset_running(self):
+        self._running.clear()

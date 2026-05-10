@@ -52,13 +52,19 @@ class HomePage(QWidget):
         header.addStretch()
 
         # =========================================================
-        # Add server button
+        # Refresh and Add server button
         # =========================================================
+        self._refresh_btn = QPushButton("⟳ Refresh")
+        self._refresh_btn.setCursor(Qt.PointingHandCursor)
+        self._refresh_btn.setStyleSheet(_ADD_BTN_STYLE)
+        self._refresh_btn.clicked.connect(self._manual_refresh)
+
         self._add_btn = QPushButton("+  Add server")
         self._add_btn.setCursor(Qt.PointingHandCursor)
         self._add_btn.setStyleSheet(_ADD_BTN_STYLE)
         self._add_btn.clicked.connect(self._on_add_clicked)
 
+        header.addWidget(self._refresh_btn)
         header.addWidget(self._add_btn)
 
         root.addLayout(header)
@@ -220,6 +226,9 @@ class HomePage(QWidget):
             if card:
                 card.set_status("checking")
 
+            if self._checker._running and key in self._checker._running:
+                continue
+
             self._checker.check(
                 server,
                 key,
@@ -233,3 +242,14 @@ class HomePage(QWidget):
             return
 
         card.set_status("online" if online else "offline")
+
+    def _manual_refresh(self):
+        self._refresh_btn.setEnabled(False)
+
+        self._checker.reset_running()
+        self._refresh_server_status()
+
+        self._timer.stop()
+        self._timer.start(30000)
+
+        QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
