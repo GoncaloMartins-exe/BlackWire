@@ -179,7 +179,7 @@ class MainWindow(QMainWindow):
 
         self._pages = {
             "Home":      self._home_page,
-            "Dashboard": DashboardPage(),
+            "Dashboard": QWidget(),
             "Logs":      self._placeholder("Logs"),
             "Files":     self._placeholder("Files"),
             "Settings":  self._placeholder("Settings"),
@@ -196,9 +196,10 @@ class MainWindow(QMainWindow):
     # Navegação
     # ===========================================================================
     def _navigate(self, label: str):
-        keys = list(self._pages.keys())
-        if label in keys:
-            self._stack.setCurrentIndex(keys.index(label))
+        page = self._pages.get(label)
+        if page:
+            self._stack.setCurrentWidget(page)
+
         for btn in self._sidebar_buttons:
             btn.set_active(btn._label == label)
 
@@ -217,7 +218,20 @@ class MainWindow(QMainWindow):
 
         return page
     
-    def _on_server_selected(self, server: dict):
+    def _on_server_selected(self, payload: dict):
+
+        server = payload["server"]
+        client = payload["client"]
+
+        dashboard = self._pages.get("Dashboard")
+
+        if not isinstance(dashboard, DashboardPage):
+            dashboard = DashboardPage(server, client)
+            self._pages["Dashboard"] = dashboard
+            self._stack.addWidget(dashboard)
+        else:
+            dashboard.attach_session(server, client)
+
         self._navigate("Dashboard")
 
     def on_quit(self):
