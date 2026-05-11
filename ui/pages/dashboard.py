@@ -11,8 +11,12 @@ import random
 
 class DashboardPage(QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, server=None, client=None, parent=None):
         super().__init__(parent)
+
+        self.server = server
+        self.client = client
+
         self.setStyleSheet(f"background-color: {BW_BG};")
         self._setup_ui()
         self._start_test_timer()    #apenas para testes
@@ -168,3 +172,13 @@ class DashboardPage(QWidget):
         lat  = round(15 + 10 * math.sin(t * 0.5), 1)
         self._network.push(up, down, iface="eth0", lat_ms=lat)
         self._test_tick += 1
+    
+    def run_command(self, cmd: str):
+        if not self.client:
+            return None
+
+        return self.client.execute(cmd)
+    
+    def attach_session(self, server, client):
+        self.server = server
+        self.client = client
