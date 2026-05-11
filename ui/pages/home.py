@@ -187,7 +187,7 @@ class HomePage(QWidget):
             key = server_key(server)
             self._cards[key] = card
 
-            card.clicked.connect(self.server_selected.emit)
+            card.clicked.connect(self._on_server_clicked)
             card.delete_req.connect(self._delete_server)
             card.edit_req.connect(self._edit_server)
             self._grid.addWidget(card, i // cols, i % cols)
@@ -253,3 +253,12 @@ class HomePage(QWidget):
         self._timer.start(30000)
 
         QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
+
+    def _on_server_clicked(self, server: dict):
+        key = server_key(server)
+        client = self._checker.get_connection(key)
+
+        self.server_selected.emit({
+            "server": server,
+            "client": client
+        })
