@@ -258,6 +258,9 @@ class HomePage(QWidget):
         key = server_key(server)
         client = self._checker.get_connection(key)
 
+        if not client:
+            return
+    
         self.server_selected.emit({
             "server": server,
             "client": client
