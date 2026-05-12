@@ -8,6 +8,16 @@ from ui.widgets.circular_gauge_widget import CircularGauge
 from ui.widgets.service_card_widget import ServiceCard
 import random
 
+def format_bytes(num_bytes: int):
+    units = ["B", "KB", "MB", "GB", "TB", "PB"]
+
+    size = float(num_bytes)
+
+    for unit in units:
+        if size < 1024 or unit == units[-1]:
+            return f"{size:.1f}", unit
+
+        size /= 1024
 
 class DashboardPage(QWidget):
 
@@ -53,7 +63,7 @@ class DashboardPage(QWidget):
 
         header_layout.addWidget(self._uptime_label)
 
-        refresh_btn = QPushButton("↻  Refresh")
+        refresh_btn = QPushButton("⟳  Refresh")
         refresh_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: rgba(255, 255, 255, 15);
@@ -86,7 +96,7 @@ class DashboardPage(QWidget):
 
         self._cpu     = CircularGauge("CPU UTILIZATION",     "CPU",     "%",    BW_CYAN)
         self._ram     = CircularGauge("RAM USAGE",           "RAM",     "GB",   BW_CYAN)
-        self._storage = CircularGauge("STORAGE AVAILABILITY","STORAGE", "GB",   BW_GREEN)
+        self._storage = CircularGauge("STORAGE USAGE",       "STORAGE", "GB",   BW_GREEN)
 
         self._cpu.set_value(1, "100%")
         self._ram.set_value(0.5, "0 GB", "/ 0 GB")
@@ -121,7 +131,6 @@ class DashboardPage(QWidget):
                 background-color: rgba(255, 255, 255, 5);
                 border: 1px solid rgba(255,255,255,10);
                 border-radius: 8px;
-                p
             }}
         """)
         root.addWidget(self._network, stretch=2)
@@ -153,8 +162,7 @@ class DashboardPage(QWidget):
         self._uptime_label.setText(f"Uptime:  {days}d {hours}h {mins}m")
 
     def _on_refresh(self):
-        # tenho de ligar ao servidor aqui
-        pass
+        self.refresh_storage()
 
     def _start_test_timer(self):
         self._test_tick = 0
@@ -182,3 +190,39 @@ class DashboardPage(QWidget):
     def attach_session(self, server, client):
         self.server = server
         self.client = client
+
+        self.refresh_storage()
+
+    def refresh_storage(self):
+        if not self.client:
+            return
+
+        try:
+            result = self.run_command("df -B1 / | tail -1")
+
+            if not result:
+                return
+
+            stdout = result.get("stdout", "").strip()
+
+            if not stdout:
+                return
+
+            parts = stdout.split()
+
+            total_bytes = int(parts[1])
+            used_bytes  = int(parts[2])
+
+            usage = used_bytes / total_bytes
+
+            used_value, used_unit = format_bytes(used_bytes)
+            total_value, total_unit = format_bytes(total_bytes)
+
+            self._storage.set_value(
+                usage,
+                f"{used_value} {used_unit}",
+                f"/ {total_value} {total_unit}"
+            )
+
+        except Exception as e:
+            print("Storage refresh error:", e)
