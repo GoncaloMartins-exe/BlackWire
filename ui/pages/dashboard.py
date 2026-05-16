@@ -162,7 +162,7 @@ class DashboardPage(QWidget):
         self._uptime_label.setText(f"Uptime:  {days}d {hours}h {mins}m")
 
     def _on_refresh(self):
-        self.refresh_storage()
+        self.refresh_all()
 
     def _start_test_timer(self):
         self._test_tick = 0
@@ -191,7 +191,12 @@ class DashboardPage(QWidget):
         self.server = server
         self.client = client
 
+        self.refresh_all()
+
+    def refresh_all(self):
         self.refresh_storage()
+        self.refresh_cpu_ram()
+        self.refresh_uptime()
 
     def refresh_storage(self):
         if not self.client:
@@ -226,3 +231,53 @@ class DashboardPage(QWidget):
 
         except Exception as e:
             print("Storage refresh error:", e)
+
+    def refresh_cpu_ram(self):
+        if not self.client:
+            return
+
+        try:
+            result = self.run_command("top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}'")
+            if result:
+                stdout = result.get("stdout", "").strip()
+                if stdout:
+                    cpu = float(stdout)
+                    self._cpu.set_value(cpu / 100, f"{cpu:.0f}%")
+
+            # RAM: MemTotal e MemAvailable em kB
+            result = self.run_command("grep -E '^(MemTotal|MemAvailable):' /proc/meminfo")
+            if result:
+                stdout = result.get("stdout", "").strip()
+                if stdout:
+                    lines = {line.split()[0].rstrip(":"): int(line.split()[1])
+                             for line in stdout.splitlines()}
+                    total_kb = lines.get("MemTotal", 0)
+                    avail_kb = lines.get("MemAvailable", 0)
+                    used_kb  = total_kb - avail_kb
+
+                    total_gb = total_kb / (1024 ** 2)
+                    used_gb  = used_kb  / (1024 ** 2)
+
+                    self._ram.set_value(
+                        used_gb / total_gb,
+                        f"{used_gb:.1f} GB",
+                        f"/ {total_gb:.0f} GB"
+                    )
+
+        except Exception as e:
+            print("CPU/RAM refresh error:", e)
+
+    def refresh_uptime(self):
+        if not self.client:
+            return
+
+        try:
+            result = self.run_command("cat /proc/uptime")
+            if result:
+                stdout = result.get("stdout", "").strip()
+                if stdout:
+                    seconds = int(float(stdout.split()[0]))
+                    self.update_uptime(seconds)
+
+        except Exception as e:
+            print("Uptime refresh error:", e)
