@@ -29,6 +29,8 @@ class DashboardPage(QWidget):
 
         self.setStyleSheet(f"background-color: {BW_BG};")
         self._setup_ui()
+
+        self.refresh_all()
         
         # Timers
         self._test_tick = 0
@@ -280,18 +282,6 @@ class DashboardPage(QWidget):
 
         except Exception as e:
             print("Uptime refresh error:", e)
-
-    def _start_stats_timer(self):
-        self._stats_timer = QTimer(self)
-        self._stats_timer.setInterval(2000)  # 2 segundos
-        self._stats_timer.timeout.connect(self.refresh_cpu_ram)
-        self._stats_timer.start()
-
-    def _start_uptime_timer(self):
-        self._uptime_timer = QTimer(self)
-        self._uptime_timer.setInterval(60000)  # 60000 ms = 1 minuto
-        self._uptime_timer.timeout.connect(self.refresh_uptime)
-        self._uptime_timer.start()
 
     def _setup_timer(self, interval_ms: int, callback, call_immediately: bool = False):
         timer = QTimer(self)
