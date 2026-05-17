@@ -30,6 +30,7 @@ class DashboardPage(QWidget):
         self.setStyleSheet(f"background-color: {BW_BG};")
         self._setup_ui()
         self._start_test_timer()    #apenas para testes
+        self._start_stats_timer()
 
     def _setup_ui(self):
         root = QVBoxLayout(self)
@@ -281,3 +282,9 @@ class DashboardPage(QWidget):
 
         except Exception as e:
             print("Uptime refresh error:", e)
+
+    def _start_stats_timer(self):
+        self._stats_timer = QTimer(self)
+        self._stats_timer.setInterval(2000)  # 2 segundos
+        self._stats_timer.timeout.connect(self.refresh_cpu_ram)
+        self._stats_timer.start()
