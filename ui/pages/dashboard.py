@@ -72,8 +72,8 @@ class DashboardPage(QWidget):
 
         header_layout.addWidget(self._uptime_label)
 
-        refresh_btn = QPushButton("⟳  Refresh")
-        refresh_btn.setStyleSheet(f"""
+        self._refresh_btn = QPushButton("⟳  Refresh")
+        self._refresh_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: rgba(255, 255, 255, 15);
                 border: 1px solid rgba(255, 255, 255, 25);
@@ -89,8 +89,8 @@ class DashboardPage(QWidget):
             }}
         """)
 
-        refresh_btn.clicked.connect(self._on_refresh)
-        header_layout.addWidget(refresh_btn)
+        self._refresh_btn.clicked.connect(self._on_refresh)
+        header_layout.addWidget(self._refresh_btn)
 
         root.addWidget(header)
 
@@ -171,7 +171,19 @@ class DashboardPage(QWidget):
         self._uptime_label.setText(f"Uptime:  {days}d {hours}h {mins}m")
 
     def _on_refresh(self):
+        self._refresh_btn.setEnabled(False)
+
         self.refresh_all()
+
+        if hasattr(self, '_stats_timer'):
+            self._stats_timer.stop()
+            self._stats_timer.start()
+            
+        if hasattr(self, '_uptime_timer'):
+            self._uptime_timer.stop()
+            self._uptime_timer.start()
+
+        QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
 
     def _push_test_data(self):
         import math
