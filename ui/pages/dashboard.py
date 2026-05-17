@@ -29,8 +29,14 @@ class DashboardPage(QWidget):
 
         self.setStyleSheet(f"background-color: {BW_BG};")
         self._setup_ui()
-        self._start_test_timer()    #apenas para testes
-        self._start_stats_timer()
+        
+        # Timers
+        self._test_tick = 0
+        self._test_timer = self._setup_timer(5000, self._push_test_data, call_immediately=True)
+        
+        self._stats_timer = self._setup_timer(2000, self.refresh_cpu_ram)
+        
+        self._uptime_timer = self._setup_timer(60000, self.refresh_uptime)
 
     def _setup_ui(self):
         root = QVBoxLayout(self)
@@ -165,14 +171,6 @@ class DashboardPage(QWidget):
     def _on_refresh(self):
         self.refresh_all()
 
-    def _start_test_timer(self):
-        self._test_tick = 0
-        self._test_timer = QTimer(self)
-        self._test_timer.setInterval(5000)
-        self._test_timer.timeout.connect(self._push_test_data)
-        self._test_timer.start()
-        self._push_test_data()
-
     def _push_test_data(self):
         import math
         t = self._test_tick
@@ -288,3 +286,20 @@ class DashboardPage(QWidget):
         self._stats_timer.setInterval(2000)  # 2 segundos
         self._stats_timer.timeout.connect(self.refresh_cpu_ram)
         self._stats_timer.start()
+
+    def _start_uptime_timer(self):
+        self._uptime_timer = QTimer(self)
+        self._uptime_timer.setInterval(60000)  # 60000 ms = 1 minuto
+        self._uptime_timer.timeout.connect(self.refresh_uptime)
+        self._uptime_timer.start()
+
+    def _setup_timer(self, interval_ms: int, callback, call_immediately: bool = False):
+        timer = QTimer(self)
+        timer.setInterval(interval_ms)
+        timer.timeout.connect(callback)
+        timer.start()
+        
+        if call_immediately:
+            callback()
+            
+        return timer
