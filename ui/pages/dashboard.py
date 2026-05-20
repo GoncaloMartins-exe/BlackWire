@@ -34,7 +34,7 @@ class DashboardPage(QWidget):
         
         # Timers
         self._test_tick = 0
-        self._test_timer = self._setup_timer(5000, self._push_test_data, call_immediately=True)
+        self._network_timer = self._setup_timer(5000, self.refresh_network, call_immediately=True)
         
         self._stats_timer = self._setup_timer(2000, self.refresh_cpu_ram)
         
@@ -305,3 +305,60 @@ class DashboardPage(QWidget):
             callback()
             
         return timer
+    
+    def refresh_network(self):
+        if not self.client:
+            return
+
+        try:
+            # DOWNLOAD / UPLOAD (Linux)
+            # Lê bytes de interface (eth0 exemplo)
+            cmd = """
+            cat /proc/net/dev | grep eth0
+            """
+
+            result = self.run_command(cmd)
+            if not result:
+                return
+
+            stdout = result.get("stdout", "").strip()
+            if not stdout:
+                return
+
+            parts = stdout.split()
+
+            # /proc/net/dev:
+            # bytes received = parts[1]
+            # bytes transmitted = parts[9]
+            rx_bytes = int(parts[1])
+            tx_bytes = int(parts[9])
+
+            # Estado anterior
+            if not hasattr(self, "_prev_rx"):
+                self._prev_rx = rx_bytes
+                self._prev_tx = tx_bytes
+                return
+
+            # diff em 5s
+            rx_diff = rx_bytes - self._prev_rx
+            tx_diff = tx_bytes - self._prev_tx
+
+            self._prev_rx = rx_bytes
+            self._prev_tx = tx_bytes
+
+            # bytes -> MB/s
+            down_mbps = (rx_diff * 8) / 5 / 1_000_000
+            up_mbps   = (tx_diff * 8) / 5 / 1_000_000
+
+            ping_result = self.run_command("ping -c 1 8.8.8.8 | tail -1 | awk '{print $4}' | cut -d'/' -f2")
+
+            lat = None
+            if ping_result:
+                p = ping_result.get("stdout", "").strip()
+                if p:
+                    lat = float(p)
+
+            self._network.push(up_mbps, down_mbps, iface="eth0", lat_ms=lat)
+
+        except Exception as e:
+            print("Network refresh error:", e)
