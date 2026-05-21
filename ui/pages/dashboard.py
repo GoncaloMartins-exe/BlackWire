@@ -1,3 +1,5 @@
+import time
+
 from PySide6.QtCore import Qt, QRectF, QPointF, QTimer
 from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PySide6.QtGui import QPainter, QPen, QColor, QFont, QPainterPath, QLinearGradient
@@ -311,13 +313,7 @@ class DashboardPage(QWidget):
             return
 
         try:
-            # DOWNLOAD / UPLOAD (Linux)
-            # Lê bytes de interface (eth0 exemplo)
-            cmd = """
-            cat /proc/net/dev | grep eth0
-            """
-
-            result = self.run_command(cmd)
+            result = self.run_command("cat /proc/net/dev")
             if not result:
                 return
 
@@ -325,40 +321,46 @@ class DashboardPage(QWidget):
             if not stdout:
                 return
 
-            parts = stdout.split()
+            iface_line = next(
+                (l for l in stdout.splitlines() if l.strip().startswith("eth0:")),
+                None
+            )
+            if not iface_line:
+                return
 
-            # /proc/net/dev:
-            # bytes received = parts[1]
-            # bytes transmitted = parts[9]
-            rx_bytes = int(parts[1])
-            tx_bytes = int(parts[9])
+            stats = iface_line.split(":")[1].split()
+            rx_bytes = int(stats[0])
+            tx_bytes = int(stats[8])
 
             # Estado anterior
             if not hasattr(self, "_prev_rx"):
                 self._prev_rx = rx_bytes
                 self._prev_tx = tx_bytes
+                self._prev_time = time.time()
                 return
 
-            # diff em 5s
-            rx_diff = rx_bytes - self._prev_rx
-            tx_diff = tx_bytes - self._prev_tx
+            now = time.time()
+            dt = now - self._prev_time
+
+            down_mbps = ((rx_bytes - self._prev_rx) / dt) / (1024 * 1024)
+            up_mbps   = ((tx_bytes - self._prev_tx) / dt) / (1024 * 1024)
 
             self._prev_rx = rx_bytes
             self._prev_tx = tx_bytes
+            self._prev_time = now
 
-            # bytes -> MB/s
-            down_mbps = (rx_diff * 8) / 5 / 1_000_000
-            up_mbps   = (tx_diff * 8) / 5 / 1_000_000
-
-            ping_result = self.run_command("ping -c 1 8.8.8.8 | tail -1 | awk '{print $4}' | cut -d'/' -f2")
-
+            ping_result = self.run_command(
+                "ping -c 1 8.8.8.8 | tail -1 | awk -F'/' '{print $5}'"
+            )
             lat = None
             if ping_result:
                 p = ping_result.get("stdout", "").strip()
-                if p:
-                    lat = float(p)
+                try:
+                    lat = float(p) if p else None
+                except ValueError:
+                    lat = None
 
             self._network.push(up_mbps, down_mbps, iface="eth0", lat_ms=lat)
 
-        except Exception as e:
+        except (ValueError, IndexError) as e:
             print("Network refresh error:", e)
