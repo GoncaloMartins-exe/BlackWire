@@ -176,14 +176,11 @@ class DashboardPage(QWidget):
         self._refresh_btn.setEnabled(False)
 
         self.refresh_all()
-
-        if hasattr(self, '_stats_timer'):
-            self._stats_timer.stop()
-            self._stats_timer.start()
-            
-        if hasattr(self, '_uptime_timer'):
-            self._uptime_timer.stop()
-            self._uptime_timer.start()
+        
+        self._stats_timer.stop()
+        self._stats_timer.start()
+        self._uptime_timer.stop()
+        self._uptime_timer.start()
 
         QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
     
@@ -332,6 +329,8 @@ class DashboardPage(QWidget):
 
             now = time.time()
             dt = now - self._prev_time
+            if dt <= 0:
+                return
 
             down_mbps = ((rx_bytes - self._prev_rx) / dt) / (1024 * 1024)
             up_mbps   = ((tx_bytes - self._prev_tx) / dt) / (1024 * 1024)
