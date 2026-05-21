@@ -1,14 +1,11 @@
 import time
 
-from PySide6.QtCore import Qt, QRectF, QPointF, QTimer
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel
-from PySide6.QtGui import QPainter, QPen, QColor, QFont, QPainterPath, QLinearGradient
 from ui.widgets.helper import *
-from collections import deque
 from ui.widgets.network_widget import NetworkWidget
 from ui.widgets.circular_gauge_widget import CircularGauge
 from ui.widgets.service_card_widget import ServiceCard
-import random
 
 def format_bytes(num_bytes: int):
     units = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -29,13 +26,16 @@ class DashboardPage(QWidget):
         self.server = server
         self.client = client
 
+        self._prev_rx: int | None = None
+        self._prev_tx: int | None = None
+        self._prev_time: float | None = None
+
         self.setStyleSheet(f"background-color: {BW_BG};")
         self._setup_ui()
 
         self.refresh_all()
         
         # Timers
-        self._test_tick = 0
         self._network_timer = self._setup_timer(5000, self.refresh_network, call_immediately=True)
         
         self._stats_timer = self._setup_timer(2000, self.refresh_cpu_ram)
@@ -186,15 +186,6 @@ class DashboardPage(QWidget):
             self._uptime_timer.start()
 
         QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
-
-    def _push_test_data(self):
-        import math
-        t = self._test_tick
-        up   = round(10 + 8  * math.sin(t * 0.4), 1)
-        down = round(40 + 30 * math.sin(t * 0.3 + 1.0), 1)
-        lat  = round(15 + 10 * math.sin(t * 0.5), 1)
-        self._network.push(up, down, iface="eth0", lat_ms=lat)
-        self._test_tick += 1
     
     def run_command(self, cmd: str):
         if not self.client:
@@ -333,7 +324,7 @@ class DashboardPage(QWidget):
             tx_bytes = int(stats[8])
 
             # Estado anterior
-            if not hasattr(self, "_prev_rx"):
+            if self._prev_rx is None:
                 self._prev_rx = rx_bytes
                 self._prev_tx = tx_bytes
                 self._prev_time = time.time()
