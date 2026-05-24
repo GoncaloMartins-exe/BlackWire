@@ -6,6 +6,7 @@ from ui.widgets.helper import *
 from ui.widgets.network_widget import NetworkWidget
 from ui.widgets.circular_gauge_widget import CircularGauge
 from ui.widgets.service_card_widget import ServiceCard
+from ui.widgets.toast_notification import ToastNotification
 
 def format_bytes(num_bytes: int):
     units = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -25,6 +26,7 @@ class DashboardPage(QWidget):
 
         self.server = server
         self.client = client
+        self._connection_lost = False
 
         self._prev_rx: int | None = None
         self._prev_tx: int | None = None
@@ -95,6 +97,14 @@ class DashboardPage(QWidget):
         header_layout.addWidget(self._refresh_btn)
 
         root.addWidget(header)
+
+        self._disconnect_popup = ToastNotification(
+            self,
+            "SSH connection lost"
+        )
+
+        self._disconnect_popup.hide()
+        self._was_connected = False
 
         # ===========================================================================
         # Gauges
@@ -186,13 +196,31 @@ class DashboardPage(QWidget):
     
     def run_command(self, cmd: str):
         if not self.client:
+            self.handle_connection_lost()
             return None
 
-        return self.client.execute(cmd)
+        try:
+            result = self.client.execute(cmd)
+
+            if result is None:
+                self.handle_connection_lost()
+                return None
+
+            self.handle_reconnected()
+
+            return result
+
+        except Exception:
+            self.handle_connection_lost()
+            return None
     
     def attach_session(self, server, client):
         self.server = server
         self.client = client
+
+        self._connection_lost = False
+        self._disconnect_popup.hide()
+        self.refresh_all()
 
         self.refresh_all()
 
@@ -354,3 +382,33 @@ class DashboardPage(QWidget):
 
         except (ValueError, IndexError) as e:
             print("Network refresh error:", e)
+
+    def handle_connection_lost(self):
+        if self._connection_lost:
+            return
+
+        self._connection_lost = True
+
+        self._disconnect_popup.show_animation()
+
+
+    def handle_reconnected(self):
+        if not self._connection_lost:
+            return
+
+        self._connection_lost = False
+
+        self._disconnect_popup.hide()
+
+        self.refresh_all()
+
+        self._stats_timer.stop()
+        self._stats_timer.start()
+
+        self._uptime_timer.stop()
+        self._uptime_timer.start()
+
+        self._network_timer.stop()
+        self._network_timer.start()
+
+        self.refresh_network()

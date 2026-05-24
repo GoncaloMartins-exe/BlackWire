@@ -259,6 +259,8 @@ class HomePage(QWidget):
         client = self._checker.get_connection(key)
 
         if not client:
+            self._checker.reset_running()
+            self._refresh_server_status()
             return
     
         self.server_selected.emit({
