@@ -8,7 +8,10 @@ from ui.widgets.circular_gauge_widget import CircularGauge
 from ui.widgets.service_card_widget import ServiceCard
 from ui.widgets.toast_notification import ToastNotification
 
-def format_bytes(num_bytes: int):
+
+# Utilities ────────────────────────────────────────────────────────────────
+
+def format_bytes(num_bytes: int) -> tuple[str, str]:
     units = ["B", "KB", "MB", "GB", "TB", "PB"]
 
     size = float(num_bytes)
@@ -18,6 +21,63 @@ def format_bytes(num_bytes: int):
             return f"{size:.1f}", unit
 
         size /= 1024
+
+
+_CARD_STYLE = """
+    QWidget {
+        background-color: rgba(255, 255, 255, 5);
+        border: 1px solid rgba(255, 255, 255, 10);
+        border-radius: 8px;
+    }
+"""
+
+_PILL_STYLE = f"""
+    QLabel, QPushButton {{
+        background-color: rgba(255, 255, 255, 15);
+        border: 1px solid rgba(255, 255, 255, 25);
+        border-radius: 8px;
+        color: {BW_TEXT_DIM};
+        font-size: 11px;
+        padding: 5px 14px;
+    }}
+"""
+
+_REFRESH_HOVER = f"""
+    QPushButton:hover {{
+        background-color: rgba(255, 255, 255, 20);
+        color: {BW_TEXT};
+    }}
+"""
+
+
+def _make_pill_label(text: str) -> QLabel:
+    lbl = QLabel(text)
+    lbl.setStyleSheet(_PILL_STYLE)
+    return lbl
+
+
+def _make_refresh_button() -> QPushButton:
+    btn = QPushButton("⟳  Refresh")
+    btn.setStyleSheet(_PILL_STYLE + _REFRESH_HOVER + "QPushButton { margin-left: 12px; }")
+    return btn
+
+
+def _make_gauge_card(gauge: CircularGauge) -> QWidget:
+    card = QWidget()
+    card.setStyleSheet(_CARD_STYLE)
+    layout = QVBoxLayout(card)
+    layout.setAlignment(Qt.AlignCenter)
+    layout.setSpacing(10)
+    layout.setContentsMargins(0, 24, 0, 24)
+    layout.addWidget(
+        make_label(gauge.title, color=BW_TEXT_DIM, size=10,
+                   letter_spacing="1.5px", align=Qt.AlignCenter)
+    )
+    layout.addWidget(gauge, alignment=Qt.AlignCenter)
+    return card
+
+
+# Dashboard Page _________________________________________________________________
 
 class DashboardPage(QWidget):
 
@@ -36,165 +96,104 @@ class DashboardPage(QWidget):
         self._setup_ui()
 
         self.refresh_all()
-        
-        # Timers
-        self._network_timer = self._setup_timer(5000, self.refresh_network, call_immediately=True)
-        
-        self._stats_timer = self._setup_timer(2000, self.refresh_cpu_ram)
-        
-        self._uptime_timer = self._setup_timer(60000, self.refresh_uptime)
+
+        self._stats_timer   = self._setup_timer(2000,  self.refresh_cpu_ram)
+        self._uptime_timer  = self._setup_timer(60000, self.refresh_uptime)
+        self._network_timer = self._setup_timer(5000,  self.refresh_network, call_immediately=True)
+
+    # UI Construction ____________________________________________________________
 
     def _setup_ui(self):
         root = QVBoxLayout(self)
         root.setContentsMargins(24, 24, 24, 40)
         root.setSpacing(0)
 
-        # ===========================================================================
-        # Header
-        # ===========================================================================
+        root.addWidget(self._build_header())
+
+        self._disconnect_popup = ToastNotification(self, "SSH connection lost")
+        self._disconnect_popup.hide()
+
+        root.addWidget(self._build_gauges())
+        root.addSpacing(12)
+        root.addWidget(self._build_network(), stretch=2)
+        root.addWidget(self._build_service_cards(), stretch=1)
+
+    def _build_header(self) -> QWidget:
         header = QWidget()
         header.setStyleSheet("background: transparent")
-        header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(0, 0, 0, 16)
-        header_layout.setSpacing(0)
+        layout = QHBoxLayout(header)
+        layout.setContentsMargins(0, 0, 0, 16)
+        layout.setSpacing(0)
 
-        title = make_label("Dashboard", color=BW_TEXT, size=20, bold=True)
-        header_layout.addWidget(title)
-        header_layout.addStretch()
+        layout.addWidget(make_label("Dashboard", color=BW_TEXT, size=20, bold=True))
+        layout.addStretch()
 
-        self._uptime_label = QLabel("Uptime: -")
-        self._uptime_label.setStyleSheet(f"""
-            QLabel {{
-                background-color: rgba(255, 255, 255, 15);
-                border: 1px solid rgba(255, 255, 255, 25);
-                border-radius: 8px;
-                color: {BW_TEXT_DIM};
-                font-size: 11px;
-                padding: 5px 14px;
-            }}
-        """)
+        self._uptime_label = _make_pill_label("Uptime: -")
+        layout.addWidget(self._uptime_label)
 
-        header_layout.addWidget(self._uptime_label)
-
-        self._refresh_btn = QPushButton("⟳  Refresh")
-        self._refresh_btn.setStyleSheet(f"""
-            QPushButton {{
-                background-color: rgba(255, 255, 255, 15);
-                border: 1px solid rgba(255, 255, 255, 25);
-                border-radius: 8px;
-                color: {BW_TEXT_DIM};
-                font-size: 11px;
-                padding: 5px 14px;
-                margin-left: 12px;
-            }}
-            QPushButton:hover {{
-                background-color: rgba(255, 255, 255, 20);
-                color: {BW_TEXT};
-            }}
-        """)
-
+        self._refresh_btn = _make_refresh_button()
         self._refresh_btn.clicked.connect(self._on_refresh)
-        header_layout.addWidget(self._refresh_btn)
+        layout.addWidget(self._refresh_btn)
 
-        root.addWidget(header)
+        return header
 
-        self._disconnect_popup = ToastNotification(
-            self,
-            "SSH connection lost"
-        )
-
-        self._disconnect_popup.hide()
-        self._was_connected = False
-
-        # ===========================================================================
-        # Gauges
-        # ===========================================================================
-        gauges_widget = QWidget()
-        gauges_widget.setStyleSheet("background: transparent;")
-        gauges_layout = QHBoxLayout(gauges_widget)
-        gauges_layout.setSpacing(20)
-        gauges_layout.setContentsMargins(0, 0, 0, 0)
-
-        self._cpu     = CircularGauge("CPU UTILIZATION",     "CPU",     "%",    BW_CYAN)
-        self._ram     = CircularGauge("RAM USAGE",           "RAM",     "GB",   BW_CYAN)
-        self._storage = CircularGauge("STORAGE USAGE",       "STORAGE", "GB",   BW_GREEN)
+    def _build_gauges(self) -> QWidget:
+        self._cpu     = CircularGauge("CPU UTILIZATION", "CPU",     "%",  BW_CYAN)
+        self._ram     = CircularGauge("RAM USAGE",       "RAM",     "GB", BW_CYAN)
+        self._storage = CircularGauge("STORAGE USAGE",   "STORAGE", "GB", BW_GREEN)
 
         self._cpu.set_value(1, "100%")
         self._ram.set_value(0.5, "0 GB", "/ 0 GB")
         self._storage.set_value(0, "0 GB", "/ 0 GB")
 
+        container = QWidget()
+        container.setStyleSheet("background: transparent;")
+        layout = QHBoxLayout(container)
+        layout.setSpacing(20)
+        layout.setContentsMargins(0, 0, 0, 0)
+
         for gauge in [self._cpu, self._ram, self._storage]:
-            col = QWidget()
-            col.setStyleSheet(f"""
-                QWidget {{
-                    background-color: rgba(255, 255, 255, 5);
-                    border: 1px solid rgba(255,255,255,10);
-                    border-radius: 8px;
-                }}
-            """)
-            col_layout = QVBoxLayout(col)
-            col_layout.setAlignment(Qt.AlignCenter)
-            col_layout.setSpacing(10)
-            col_layout.setContentsMargins(0, 24, 0, 24)
-            col_layout.addWidget(make_label(gauge.title, color=BW_TEXT_DIM, size=10, letter_spacing="1.5px", align=Qt.AlignCenter))
-            col_layout.addWidget(gauge, alignment=Qt.AlignCenter)
-            gauges_layout.addWidget(col, stretch=1)
-        
-        root.addWidget(gauges_widget)
-        root.addSpacing(12)
+            layout.addWidget(_make_gauge_card(gauge), stretch=1)
 
-        # ===========================================================================
-        # Network card
-        # ===========================================================================
+        return container
+
+    def _build_network(self) -> NetworkWidget:
         self._network = NetworkWidget()
-        self._network.setStyleSheet(f"""
-            QWidget {{
-                background-color: rgba(255, 255, 255, 5);
-                border: 1px solid rgba(255,255,255,10);
-                border-radius: 8px;
-            }}
-        """)
-        root.addWidget(self._network, stretch=2)
+        self._network.setStyleSheet(_CARD_STYLE)
+        return self._network
 
-        # ===========================================================================
-        # Service cards
-        # ===========================================================================
-        cards_widget = QWidget()
-        cards_widget.setStyleSheet("background: transparent;")
-        cards_layout = QHBoxLayout(cards_widget)
-        cards_layout.setAlignment(Qt.AlignCenter)
-        cards_layout.setSpacing(20)
-        cards_layout.setContentsMargins(0, 0, 0, 0)
+    def _build_service_cards(self) -> QWidget:
+        container = QWidget()
+        container.setStyleSheet("background: transparent;")
+        layout = QHBoxLayout(container)
+        layout.setAlignment(Qt.AlignCenter)
+        layout.setSpacing(20)
+        layout.setContentsMargins(0, 0, 0, 0)
 
-        cards_layout.addWidget(ServiceCard("placeholder.png", "WireGuard VPN", True,  "X Users Connected"))
-        cards_layout.addWidget(ServiceCard("placeholder.png", "Samba NAS",     True,  "X Shared Folders"))
+        layout.addWidget(ServiceCard("placeholder.png", "WireGuard VPN", True, "X Users Connected"))
+        layout.addWidget(ServiceCard("placeholder.png", "Samba NAS",     True, "X Shared Folders"))
 
-        root.addWidget(cards_widget, stretch=1)
+        return container
 
-    def update_stats(self, cpu: float, ram_used: float, ram_total: float, storage_free: float, storage_total: float):
-        self._cpu.set_value(cpu / 100, f"{cpu:.0f}%")
-        self._ram.set_value(ram_used / ram_total, f"{ram_used:.1f} GB", f"/ {ram_total:.0f} GB")
-        self._storage.set_value(storage_free / storage_total, f"{storage_free:.1f} GB", f"/ {storage_total:.1f}")
+    # Timer Helpers __________________________________________________________________
 
-    def update_uptime(self, seconds: int):
-        days, r = divmod(seconds, 86400)
-        hours, r = divmod(r, 3600)
-        mins = r // 60
-        self._uptime_label.setText(f"Uptime:  {days}d {hours}h {mins}m")
+    def _setup_timer(self, interval_ms: int, callback, call_immediately=False) -> QTimer:
+        timer = QTimer(self)
+        timer.setInterval(interval_ms)
+        timer.timeout.connect(callback)
+        timer.start()
+        if call_immediately:
+            callback()
+        return timer
 
-    def _on_refresh(self):
-        self._refresh_btn.setEnabled(False)
+    def _restart_timers(self):
+        for timer in [self._stats_timer, self._uptime_timer, self._network_timer]:
+            timer.stop()
+            timer.start()
 
-        self.refresh_all()
-        
-        self._stats_timer.stop()
-        self._stats_timer.start()
-        self._uptime_timer.stop()
-        self._uptime_timer.start()
+    # Data Refresh ____________________________________________________________________
 
-        QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
-    
-    def run_command(self, cmd: str):
+    def run_command(self, cmd: str) -> dict | None:
         if not self.client:
             self.handle_connection_lost()
             return None
@@ -213,16 +212,14 @@ class DashboardPage(QWidget):
         except Exception:
             self.handle_connection_lost()
             return None
-    
-    def attach_session(self, server, client):
-        self.server = server
-        self.client = client
 
-        self._connection_lost = False
-        self._disconnect_popup.hide()
-        self.refresh_all()
-
-        self.refresh_all()
+    def _get_stdout(self, cmd: str) -> str | None:
+        """Run a command and return stripped stdout, or None on failure."""
+        result = self.run_command(cmd)
+        if not result:
+            return None
+        stdout = result.get("stdout", "").strip()
+        return stdout or None
 
     def refresh_all(self):
         self.refresh_storage()
@@ -234,30 +231,18 @@ class DashboardPage(QWidget):
             return
 
         try:
-            result = self.run_command("df -B1 / | tail -1")
-
-            if not result:
-                return
-
-            stdout = result.get("stdout", "").strip()
-
+            stdout = self._get_stdout("df -B1 / | tail -1")
             if not stdout:
                 return
 
             parts = stdout.split()
-
-            total_bytes = int(parts[1])
-            used_bytes  = int(parts[2])
-
-            usage = used_bytes / total_bytes
-
-            used_value, used_unit = format_bytes(used_bytes)
-            total_value, total_unit = format_bytes(total_bytes)
-
+            total_bytes, used_bytes = int(parts[1]), int(parts[2])
+            used_val,  used_unit  = format_bytes(used_bytes)
+            total_val, total_unit = format_bytes(total_bytes)
             self._storage.set_value(
-                usage,
-                f"{used_value} {used_unit}",
-                f"/ {total_value} {total_unit}"
+                used_bytes / total_bytes,
+                f"{used_val} {used_unit}",
+                f"/ {total_val} {total_unit}",
             )
 
         except Exception as e:
@@ -266,122 +251,114 @@ class DashboardPage(QWidget):
     def refresh_cpu_ram(self):
         if not self.client:
             return
-
         try:
-            result = self.run_command("top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}'")
-            if result:
-                stdout = result.get("stdout", "").strip()
-                if stdout:
-                    cpu = float(stdout)
-                    self._cpu.set_value(cpu / 100, f"{cpu:.0f}%")
-
-            # RAM: MemTotal e MemAvailable em kB
-            result = self.run_command("grep -E '^(MemTotal|MemAvailable):' /proc/meminfo")
-            if result:
-                stdout = result.get("stdout", "").strip()
-                if stdout:
-                    lines = {line.split()[0].rstrip(":"): int(line.split()[1])
-                             for line in stdout.splitlines()}
-                    total_kb = lines.get("MemTotal", 0)
-                    avail_kb = lines.get("MemAvailable", 0)
-                    used_kb  = total_kb - avail_kb
-
-                    total_gb = total_kb / (1024 ** 2)
-                    used_gb  = used_kb  / (1024 ** 2)
-
-                    self._ram.set_value(
-                        used_gb / total_gb,
-                        f"{used_gb:.1f} GB",
-                        f"/ {total_gb:.0f} GB"
-                    )
-
+            self._refresh_cpu()
+            self._refresh_ram()
         except Exception as e:
             print("CPU/RAM refresh error:", e)
+
+    def _refresh_cpu(self):
+        stdout = self._get_stdout("top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}'")
+        if stdout:
+            cpu = float(stdout)
+            self._cpu.set_value(cpu / 100, f"{cpu:.0f}%")
+
+    def _refresh_ram(self):
+        stdout = self._get_stdout("grep -E '^(MemTotal|MemAvailable):' /proc/meminfo")
+        if not stdout:
+            return
+        lines = {
+            line.split()[0].rstrip(":"): int(line.split()[1])
+            for line in stdout.splitlines()
+        }
+        total_kb = lines.get("MemTotal", 0)
+        used_kb  = total_kb - lines.get("MemAvailable", 0)
+        total_gb = total_kb / 1024 ** 2
+        used_gb  = used_kb  / 1024 ** 2
+        self._ram.set_value(used_gb / total_gb, f"{used_gb:.1f} GB", f"/ {total_gb:.0f} GB")
 
     def refresh_uptime(self):
         if not self.client:
             return
 
         try:
-            result = self.run_command("cat /proc/uptime")
-            if result:
-                stdout = result.get("stdout", "").strip()
-                if stdout:
-                    seconds = int(float(stdout.split()[0]))
-                    self.update_uptime(seconds)
-
+            stdout = self._get_stdout("cat /proc/uptime")
+            if stdout:
+                self.update_uptime(int(float(stdout.split()[0])))
         except Exception as e:
             print("Uptime refresh error:", e)
 
-    def _setup_timer(self, interval_ms: int, callback, call_immediately: bool = False):
-        timer = QTimer(self)
-        timer.setInterval(interval_ms)
-        timer.timeout.connect(callback)
-        timer.start()
-        
-        if call_immediately:
-            callback()
-            
-        return timer
-    
     def refresh_network(self):
         if not self.client:
             return
 
         try:
-            result = self.run_command("cat /proc/net/dev")
-            if not result:
-                return
-
-            stdout = result.get("stdout", "").strip()
+            stdout = self._get_stdout("cat /proc/net/dev")
             if not stdout:
                 return
 
             iface_line = next(
-                (l for l in stdout.splitlines() if l.strip().startswith("eth0:")),
-                None
+                (l for l in stdout.splitlines() if l.strip().startswith("eth0:")), None
             )
             if not iface_line:
                 return
 
-            stats = iface_line.split(":")[1].split()
+            stats    = iface_line.split(":")[1].split()
             rx_bytes = int(stats[0])
             tx_bytes = int(stats[8])
 
-            # Estado anterior
+            now = time.time()
             if self._prev_rx is None:
-                self._prev_rx = rx_bytes
-                self._prev_tx = tx_bytes
-                self._prev_time = time.time()
+                self._prev_rx, self._prev_tx, self._prev_time = rx_bytes, tx_bytes, now
                 return
 
-            now = time.time()
             dt = now - self._prev_time
             if dt <= 0:
                 return
 
-            down_mbps = ((rx_bytes - self._prev_rx) / dt) / (1024 * 1024)
-            up_mbps   = ((tx_bytes - self._prev_tx) / dt) / (1024 * 1024)
+            down_mbps = (rx_bytes - self._prev_rx) / dt / (1024 * 1024)
+            up_mbps   = (tx_bytes - self._prev_tx) / dt / (1024 * 1024)
+            self._prev_rx, self._prev_tx, self._prev_time = rx_bytes, tx_bytes, now
 
-            self._prev_rx = rx_bytes
-            self._prev_tx = tx_bytes
-            self._prev_time = now
-
-            ping_result = self.run_command(
-                "ping -c 1 8.8.8.8 | tail -1 | awk -F'/' '{print $5}'"
-            )
-            lat = None
-            if ping_result:
-                p = ping_result.get("stdout", "").strip()
-                try:
-                    lat = float(p) if p else None
-                except ValueError:
-                    lat = None
-
-            self._network.push(up_mbps, down_mbps, iface="eth0", lat_ms=lat)
+            self._network.push(up_mbps, down_mbps, iface="eth0", lat_ms=self._fetch_ping())
 
         except (ValueError, IndexError) as e:
             print("Network refresh error:", e)
+
+    def _fetch_ping(self) -> float | None:
+        stdout = self._get_stdout("ping -c 1 8.8.8.8 | tail -1 | awk -F'/' '{print $5}'")
+        try:
+            return float(stdout) if stdout else None
+        except ValueError:
+            return None
+
+    # UI Updates ____________________________________________________________________
+
+    def update_stats(self, cpu, ram_used, ram_total, storage_free, storage_total):
+        self._cpu.set_value(cpu / 100, f"{cpu:.0f}%")
+        self._ram.set_value(ram_used / ram_total, f"{ram_used:.1f} GB", f"/ {ram_total:.0f} GB")
+        self._storage.set_value(storage_free / storage_total, f"{storage_free:.1f} GB", f"/ {storage_total:.1f}")
+
+    def update_uptime(self, seconds: int):
+        days,  r    = divmod(seconds, 86400)
+        hours, r    = divmod(r, 3600)
+        mins        = r // 60
+        self._uptime_label.setText(f"Uptime:  {days}d {hours}h {mins}m")
+
+    # Connection Handling ___________________________________________________________
+
+    def attach_session(self, server, client):
+        self.server = server
+        self.client = client
+        self._connection_lost = False
+        self._disconnect_popup.hide()
+        self.refresh_all()
+
+    def _on_refresh(self):
+        self._refresh_btn.setEnabled(False)
+        self.refresh_all()
+        self._restart_timers()
+        QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
 
     def handle_connection_lost(self):
         if self._connection_lost:
@@ -391,24 +368,11 @@ class DashboardPage(QWidget):
 
         self._disconnect_popup.show_animation()
 
-
     def handle_reconnected(self):
         if not self._connection_lost:
             return
-
         self._connection_lost = False
-
         self._disconnect_popup.hide()
-
         self.refresh_all()
-
-        self._stats_timer.stop()
-        self._stats_timer.start()
-
-        self._uptime_timer.stop()
-        self._uptime_timer.start()
-
-        self._network_timer.stop()
-        self._network_timer.start()
-
+        self._restart_timers()
         self.refresh_network()
