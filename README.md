@@ -70,10 +70,30 @@ python main.py
  
 | Pacote | Versão | Utilização |
 |---|---|---|
-| PySide6 | 6.x | Interface gráfica (Qt6) |
-| paramiko | 3.x | Ligação SSH / SFTP |
-| pyqtgraph | 0.13.x | Gráficos de monitorização |
-| cryptography | latest | Dependência do paramiko |
-| pyinstaller | 6.x | Empacotamento em executável |
+| PySide6 | 6.11.0 | Interface gráfica (Qt6) |
+| PySide6_Addons | 6.11.0 | Módulos adicionais do Qt6 |
+| PySide6_Essentials | 6.11.0 | Componentes essenciais do Qt6 |
+| shiboken6 | 6.11.0 | Binding generator utilizado pelo PySide6 |
+| pyqtgraph | 0.14.0 | Gráficos de monitorização |
+| numpy | 2.4.4 | Processamento numérico e arrays |
+| keyring | 25.2.1 | Armazenamento seguro de credenciais |
+| platformdirs | 4.2.2 | Gestão de diretórios específicos da plataforma |
+| paramiko | 4.0.0 | Ligação SSH / SFTP |
+| cryptography | 46.0.7 | Criptografia utilizada pelo Paramiko |
+| bcrypt | 5.0.0 | Hashing de passwords |
+| PyNaCl | 1.6.2 | Funções criptográficas adicionais |
+| cffi | 2.0.0 | Interface C para bibliotecas Python |
+| pycparser | 3.0 | Parser C utilizado pelo cffi |
+| pyinstaller | 6.19.0 | Empacotamento em executável |
+| pyinstaller-hooks-contrib | 2026.4 | Hooks adicionais para PyInstaller |
+| altgraph | 0.17.5 | Análise de dependências para empacotamento |
+| packaging | 26.1 | Gestão e parsing de versões/pacotes |
+| colorama | 0.4.6 | Cores no terminal multiplataforma |
+| invoke | 3.0.3 | Automatização de tarefas e scripts |
+| pefile | 2024.8.26 | Manipulação de executáveis PE (Windows) |
+| pywin32-ctypes | 0.2.3 | Integração Win32 para Python (Windows) |
+| setuptools | 82.0.1 | Ferramentas de build/distribuição (Linux) |
+| SecretStorage | 3.3.3 | Acesso ao armazenamento seguro no Linux |
+| jeepney | 0.8.0 | Comunicação D-Bus utilizada pelo SecretStorage |
  
 As versões exatas encontram-se no ficheiro `requirements.txt`.
