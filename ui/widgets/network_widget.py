@@ -200,34 +200,14 @@ class NetworkWidget(QWidget):
         legend.setSpacing(0)
 
         # Download
-        dn_col = QWidget(); dn_col.setStyleSheet("background: transparent; border: none;")
-        dn_l = QVBoxLayout(dn_col); dn_l.setContentsMargins(0,0,0,0); dn_l.setSpacing(1)
-        dn_l.setAlignment(Qt.AlignLeft)
-        self._dn_val = make_label("↓  —", color=BW_CYAN,  size=13, bold=True)
-        self._dn_lbl = make_label("Download", color=BW_TEXT_DIM, size=10)
-        dn_l.addWidget(self._dn_val); dn_l.addWidget(self._dn_lbl)
-        legend.addWidget(dn_col, stretch=1)
-
+        dn_col,  self._dn_val,  self._dn_lbl  = self._make_legend_col("↓  —",  BW_CYAN,  "Download", Qt.AlignLeft)
         # Upload
-        up_col = QWidget(); up_col.setStyleSheet("background: transparent; border: none;")
-        up_l = QVBoxLayout(up_col); up_l.setContentsMargins(0,0,0,0); up_l.setSpacing(1)
-        up_l.setAlignment(Qt.AlignCenter)
-        self._up_val = make_label("↑  —", color=BW_GREEN, size=13, bold=True)
-        self._up_lbl = make_label("Upload", color=BW_TEXT_DIM, size=10)
-        self._up_val.setAlignment(Qt.AlignCenter)
-        self._up_lbl.setAlignment(Qt.AlignCenter)
-        up_l.addWidget(self._up_val); up_l.addWidget(self._up_lbl)
-        legend.addWidget(up_col, stretch=1)
-
+        up_col,  self._up_val,  self._up_lbl  = self._make_legend_col("↑  —",  BW_GREEN, "Upload",   Qt.AlignCenter)
         # Latência
-        lat_col = QWidget(); lat_col.setStyleSheet("background: transparent; border: none;")
-        lat_l = QVBoxLayout(lat_col); lat_l.setContentsMargins(0,0,0,0); lat_l.setSpacing(1)
-        lat_l.setAlignment(Qt.AlignRight)
-        self._lat_val = make_label("— ms", color=BW_TEXT, size=13, bold=True)
-        self._lat_lbl = make_label("Latency", color=BW_TEXT_DIM, size=10)
-        self._lat_val.setAlignment(Qt.AlignRight)
-        self._lat_lbl.setAlignment(Qt.AlignRight)
-        lat_l.addWidget(self._lat_val); lat_l.addWidget(self._lat_lbl)
+        lat_col, self._lat_val, self._lat_lbl = self._make_legend_col("— ms",  BW_TEXT,  "Latency",  Qt.AlignRight)
+
+        legend.addWidget(dn_col,  stretch=1)
+        legend.addWidget(up_col,  stretch=1)
         legend.addWidget(lat_col, stretch=1)
 
         root.addLayout(legend)
@@ -278,3 +258,18 @@ class NetworkWidget(QWidget):
             self._iface_dot.setStyleSheet(
                 f"background-color: {dot_color}; border-radius: 3px; border: none;"
             )
+
+    def _make_legend_col(self, val_text, val_color, lbl_text, alignment=Qt.AlignLeft):
+        col = QWidget()
+        col.setStyleSheet("background: transparent; border: none;")
+        layout = QVBoxLayout(col)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(1)
+        layout.setAlignment(alignment)
+        val = make_label(val_text, color=val_color, size=13, bold=True)
+        lbl = make_label(lbl_text, color=BW_TEXT_DIM, size=10)
+        val.setAlignment(alignment)
+        lbl.setAlignment(alignment)
+        layout.addWidget(val)
+        layout.addWidget(lbl)
+        return col, val, lbl
