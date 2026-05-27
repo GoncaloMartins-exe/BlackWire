@@ -220,21 +220,17 @@ class NetworkWidget(QWidget):
     def _on_hover(self, index: int, upload: float, download: float):
         if index == -1:
             # Repor valores actuais
-            self._update_legend(self._cur_up, self._cur_down, self._cur_lat, hover=False)
+            self._update_legend(self._cur_up, self._cur_down, self._cur_lat)
         else:
             offset = MAX_POINTS - 1 - index          # quantos segundos atrás
             ago    = offset * 5
             suffix = f"  ({ago}s before)" if ago > 0 else "  (now)"
             self._dn_val.setText(f"↓  {download:.1f} MB/s{suffix}")
             self._up_val.setText(f"↑  {upload:.1f} MB/s{suffix}")
-            self._dn_lbl.setText("Download")
-            self._up_lbl.setText("Upload")
 
-    def _update_legend(self, up: float, down: float, lat_ms, hover=False):
+    def _update_legend(self, up: float, down: float, lat_ms):
         self._dn_val.setText(f"↓  {down:.1f} MB/s")
         self._up_val.setText(f"↑  {up:.1f} MB/s")
-        self._dn_lbl.setText("Download")
-        self._up_lbl.setText("Upload")
         if lat_ms is not None:
             self._lat_val.setText(f"{lat_ms:.0f} ms")
             color = BW_GREEN if lat_ms < 30 else (BW_CYAN if lat_ms < 80 else "#f59e0b")
