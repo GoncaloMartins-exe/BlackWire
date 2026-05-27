@@ -53,17 +53,19 @@ class NetworkGraph(QWidget):
     # ==================================================================
     # Pintura
     # ==================================================================
+
+    def x_of(self, i):
+        w = self.width()
+        return self.pad_l + i * (w - self.pad_l - self.pad_r) / (MAX_POINTS - 1)
+
+    def y_of(self, v, h):
+        return self.pad_t + (1.0 - v / self._peak) * (h - self.pad_t - self.pad_b)
+    
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
         w, h = self.width(), self.height()
-
-        def x_of(i):
-            return self.pad_l + i * (w - self.pad_l - self.pad_r) / (MAX_POINTS - 1)
-
-        def y_of(v):
-            return self.pad_t + (1.0 - v / self._peak) * (h - self.pad_t - self.pad_b)
 
         # Grid horizontal
         for frac in [0.25, 0.5, 0.75, 1.0]:
@@ -84,13 +86,13 @@ class NetworkGraph(QWidget):
             (MAX_POINTS - 1,  "now"),
         ]:
             painter.drawText(
-                QRectF(x_of(i) - 18, h - self.pad_b + 3, 36, 14),
+                QRectF(self.x_of(i) - 18, h - self.pad_b + 3, 36, 14),
                 Qt.AlignCenter, label
             )
 
         # Linha de hover vertical
         if self._hover_i >= 0:
-            hx = x_of(self._hover_i)
+            hx = self.x_of(self._hover_i)
             pen_h = QPen(QColor("#ffffff"), 1, Qt.DashLine)
             pen_h.setDashPattern([3, 4])
             painter.setPen(pen_h)
@@ -99,7 +101,7 @@ class NetworkGraph(QWidget):
             painter.setOpacity(1.0)
 
         def draw_series(data, color_hex, alpha_fill=40):
-            points = [QPointF(x_of(i), y_of(v)) for i, v in enumerate(data)]
+            points = [QPointF(self.x_of(i), self.y_of(v, h)) for i, v in enumerate(data)]
 
             # Área preenchida
             path = QPainterPath()
