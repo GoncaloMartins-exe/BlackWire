@@ -57,6 +57,35 @@ _ADD_BTN_STYLE = f"""
     }}
 """
 
+_CANCEL_BTN_STYLE = f"""
+    QPushButton {{
+        background-color: transparent;
+        border: 1px solid rgba(255, 255, 255, 18);
+        border-radius: 8px;
+        color: {BW_TEXT_DIM};
+        font-size: 11px;
+        padding: 0 16px;
+    }}
+    QPushButton:hover {{
+        background-color: rgba(255, 255, 255, 10);
+        color: {BW_TEXT};
+    }}
+"""
+
+_SUBMIT_BTN_STYLE = f"""
+    QPushButton {{
+        background-color: {BW_CYAN};
+        border: none;
+        border-radius: 8px;
+        color: #000000;
+        font-size: 11px;
+        font-weight: bold;
+        padding: 0 18px;
+    }}
+    QPushButton:pressed {{
+        background-color: rgba(0, 200, 200, 200);
+    }}
+"""
 
 class AddServerForm(QWidget):
 
@@ -225,42 +254,14 @@ class AddServerForm(QWidget):
 
         cancel_btn.setFixedHeight(32)
 
-        cancel_btn.setStyleSheet(f"""
-            QPushButton {{
-                background-color: transparent;
-                border: 1px solid rgba(255, 255, 255, 18);
-                border-radius: 8px;
-                color: {BW_TEXT_DIM};
-                font-size: 11px;
-                padding: 0 16px;
-            }}
-
-            QPushButton:hover {{
-                background-color: rgba(255, 255, 255, 10);
-                color: {BW_TEXT};
-            }}
-        """)
+        cancel_btn.setStyleSheet(_CANCEL_BTN_STYLE)
         cancel_btn.clicked.connect(self.cancelled.emit)
 
         self._submit_btn = QPushButton("Add server")
         self._submit_btn.setCursor(Qt.PointingHandCursor)
         self._submit_btn.setFixedHeight(32)
 
-        self._submit_btn.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {BW_CYAN};
-                border: none;
-                border-radius: 8px;
-                color: #000000;
-                font-size: 11px;
-                font-weight: bold;
-                padding: 0 18px;
-            }}
-
-            QPushButton:pressed {{
-                background-color: rgba(0, 200, 200, 200);
-            }}
-        """)
+        self._submit_btn.setStyleSheet(_SUBMIT_BTN_STYLE)
         self._submit_btn.clicked.connect(self._on_submit)
 
         btn_row.addWidget(cancel_btn)
