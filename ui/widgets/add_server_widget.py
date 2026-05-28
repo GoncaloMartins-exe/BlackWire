@@ -41,6 +41,38 @@ _INPUT_STYLE = f"""
     }}
 """
 
+_COMBO_STYLE = f"""
+    QComboBox {{
+        background-color: rgba(255, 255, 255, 8);
+        border: 1px solid rgba(255, 255, 255, 14);
+        border-radius: 8px;
+        color: {BW_TEXT};
+        font-size: 9pt;
+        padding: 6px 12px;
+    }}
+    QComboBox:focus {{
+        border: 1px solid {BW_CYAN};
+        background-color: rgba(255, 255, 255, 11);
+    }}
+    QComboBox::drop-down {{
+        border: none;
+        width: 24px;
+    }}
+    QComboBox::down-arrow {{
+        image: none;
+        width: 0;
+    }}
+    QComboBox QAbstractItemView {{
+        background-color: #1e1e2a;
+        border: 1px solid rgba(255, 255, 255, 14);
+        border-radius: 8px;
+        color: {BW_TEXT};
+        font-size: 9pt;
+        selection-background-color: rgba(255, 255, 255, 12);
+        padding: 4px;
+    }}
+"""
+
 _ADD_BTN_STYLE = f"""
     QPushButton {{
         background-color: rgba(255, 255, 255, 15);
@@ -158,7 +190,7 @@ class AddServerForm(QWidget):
         ])
 
         self._auth.setFixedHeight(34)
-        self._auth.setStyleSheet(_INPUT_STYLE)
+        self._auth.setStyleSheet(_COMBO_STYLE)
 
         self._auth.setSizePolicy(
             QSizePolicy.Expanding,
