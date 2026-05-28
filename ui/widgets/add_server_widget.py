@@ -191,7 +191,7 @@ class AddServerForm(QWidget):
         self._auth_stack.addWidget(self._password)
         self._auth_stack.addWidget(self.key_widget)
 
-        stack_col, self._auth_stack_label = self._labeled_with_label("Password", self._auth_stack)
+        stack_col, self._auth_stack_label = self._labeled("Password", self._auth_stack, return_label=True)
 
         fields_row.addLayout(self._labeled("Auth", self._auth))
         fields_row.addLayout(stack_col)
@@ -296,13 +296,14 @@ class AddServerForm(QWidget):
         return w
 
     @staticmethod
-    def _labeled(label_text: str, widget: QWidget) -> QVBoxLayout:
+    def _labeled(label_text: str, widget: QWidget, *, return_label: bool = False):
+        lbl = make_label(label_text, color=BW_TEXT_DIM, size=10)
         col = QVBoxLayout()
         col.setSpacing(5)
         col.setContentsMargins(0, 0, 0, 0)
-        col.addWidget(make_label(label_text, color=BW_TEXT_DIM, size=10))
+        col.addWidget(lbl)
         col.addWidget(widget)
-        return col
+        return (col, lbl) if return_label else col
 
     def _on_submit(self):
         name = self._name.text().strip()
@@ -331,16 +332,6 @@ class AddServerForm(QWidget):
             "password": self._password.text().strip(),
             "key_path": self._key_path.text().strip(),
         })
-
-    @staticmethod
-    def _labeled_with_label(label_text: str, widget: QWidget):
-        lbl = make_label(label_text, color=BW_TEXT_DIM, size=10)
-        col = QVBoxLayout()
-        col.setSpacing(5)
-        col.setContentsMargins(0, 0, 0, 0)
-        col.addWidget(lbl)
-        col.addWidget(widget)
-        return col, lbl
 
     def clear(self):
         self.set_edit_mode(False)
