@@ -11,6 +11,27 @@ from ui.pages.dashboard import DashboardPage
 from ui.pages.home import HomePage
 from ui.widgets.helper import *
 
+_SIDEBAR_BTN_TEXT = f"color: {{color}}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;"
+
+_SIDEBAR_BTN_ACTIVE = f"""
+    QWidget#SidebarButton {{
+        background-color: {BW_SURFACE2};
+        border-left: 3px solid {BW_CYAN};
+    }}
+"""
+_SIDEBAR_BTN_IDLE = """
+    QWidget#SidebarButton {
+        background: transparent;
+        border-left: 3px solid transparent;
+    }
+"""
+_SIDEBAR_BTN_HOVER = f"""
+    QWidget#SidebarButton {{
+        background-color: {BW_SURFACE3};
+        border-left: 3px solid transparent;
+    }}
+"""
+
 
 class SidebarButton(QWidget):
 
@@ -45,32 +66,14 @@ class SidebarButton(QWidget):
         self._update_style()
 
     def _update_style(self):
-        if self._active:
-            self.setStyleSheet(f"""
-                QWidget#SidebarButton {{
-                    background-color: {BW_SURFACE2};
-                    border-left: 3px solid {BW_CYAN};
-                }}
-            """)
-            self._text.setStyleSheet(f"color: {BW_CYAN}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;")
-        else:
-            self.setStyleSheet("""
-                QWidget#SidebarButton {
-                    background: transparent;
-                    border-left: 3px solid transparent;
-                }
-            """)
-            self._text.setStyleSheet(f"color: {BW_TEXT_DIM}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;")
+        self.setStyleSheet(_SIDEBAR_BTN_ACTIVE if self._active else _SIDEBAR_BTN_IDLE)
+        color = BW_CYAN if self._active else BW_TEXT_DIM
+        self._text.setStyleSheet(_SIDEBAR_BTN_TEXT.format(color=color))
 
     def enterEvent(self, event):
         if not self._active:
-            self.setStyleSheet(f"""
-                QWidget#SidebarButton {{
-                    background-color: {BW_SURFACE3};
-                    border-left: 3px solid transparent;
-                }}
-            """)
-            self._text.setStyleSheet(f"color: {BW_TEXT}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;")
+            self.setStyleSheet(_SIDEBAR_BTN_HOVER)
+            self._text.setStyleSheet(_SIDEBAR_BTN_TEXT.format(color=BW_TEXT))
 
     def leaveEvent(self, event):
         self._update_style()
