@@ -32,6 +32,8 @@ _SIDEBAR_BTN_HOVER = f"""
     }}
 """
 
+_MAIN_WIN_STYLE = f"QMainWindow {{ background-color: {BW_BG}; }}"
+
 
 class SidebarButton(QWidget):
 
@@ -91,9 +93,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("BlackWire")
         self.setMinimumSize(QSize(1080, 720))
         self.resize(1080, 720)
-        self.setStyleSheet(f"""
-                           QMainWindow {{ background-color: {BW_BG}; }}
-                           """)
+        self.setStyleSheet(_MAIN_WIN_STYLE)
         
         self._home_page = HomePage()
         self._home_page.server_selected.connect(self._on_server_selected)
