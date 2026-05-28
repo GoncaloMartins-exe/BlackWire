@@ -307,28 +307,26 @@ class AddServerForm(QWidget):
         return (col, lbl) if return_label else col
 
     def _on_submit(self):
-        name = self._name.text().strip()
-        host = self._host.text().strip()
-        user = self._user.text().strip()
+        fields = {
+            "name": (self._name, self._name.text().strip()),
+            "host": (self._host, self._host.text().strip()),
+            "user": (self._user, self._user.text().strip()),
+        }
 
-        # Reset styles
-        for field in (self._name, self._host, self._user):
-            field.setStyleSheet(_INPUT_STYLE)
-
-        # RED Highlight
         invalid = False
-        for field, val in [(self._name, name), (self._host, host), (self._user, user)]:
+        for key, (field, val) in fields.items():
+            style = _INPUT_STYLE + "QLineEdit { border: 1px solid #ff4466; }" if not val else _INPUT_STYLE
+            field.setStyleSheet(style)
             if not val:
-                field.setStyleSheet(_INPUT_STYLE + "QLineEdit { border: 1px solid #ff4466; }")
                 invalid = True
 
         if invalid:
             return
 
         self.submitted.emit({
-            "name": name,
-            "host": host,
-            "user": user,
+            "name": fields["name"][1],
+            "host": fields["host"][1],
+            "user": fields["user"][1],
             "auth": self._auth.currentText(),
             "password": self._password.text().strip(),
             "key_path": self._key_path.text().strip(),
