@@ -163,9 +163,6 @@ class MainWindow(QMainWindow):
             layout.addWidget(btn)
             self._sidebar_buttons.append(btn)
 
-        for btn in self._sidebar_buttons:
-            btn.set_active(False)
-
         layout.addStretch()
 
         layout.addWidget(make_separator())
