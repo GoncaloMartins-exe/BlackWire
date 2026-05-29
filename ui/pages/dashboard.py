@@ -9,32 +9,6 @@ from ui.widgets.service_card_widget import ServiceCard
 from ui.widgets.toast_notification import ToastNotification
 
 
-# Utilities ────────────────────────────────────────────────────────────────
-
-_CARD_STYLE = """
-    QWidget {
-        background-color: rgba(255, 255, 255, 5);
-        border: 1px solid rgba(255, 255, 255, 10);
-        border-radius: 8px;
-    }
-"""
-
-
-def _make_gauge_card(gauge: CircularGauge) -> QWidget:
-    card = QWidget()
-    card.setStyleSheet(_CARD_STYLE)
-    layout = QVBoxLayout(card)
-    layout.setAlignment(Qt.AlignCenter)
-    layout.setSpacing(10)
-    layout.setContentsMargins(0, 24, 0, 24)
-    layout.addWidget(
-        make_label(gauge.title, color=BW_TEXT_DIM, size=10,
-                   letter_spacing="1.5px", align=Qt.AlignCenter)
-    )
-    layout.addWidget(gauge, alignment=Qt.AlignCenter)
-    return card
-
-
 # Dashboard Page _________________________________________________________________
 
 class DashboardPage(QWidget):
@@ -111,13 +85,13 @@ class DashboardPage(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         for gauge in [self._cpu, self._ram, self._storage]:
-            layout.addWidget(_make_gauge_card(gauge), stretch=1)
+            layout.addWidget(make_widget_card(gauge.title, gauge), stretch=1)
 
         return container
 
     def _build_network(self) -> NetworkWidget:
         self._network = NetworkWidget()
-        self._network.setStyleSheet(_CARD_STYLE)
+        self._network.setStyleSheet(BW_CARD_STYLE)
         return self._network
 
     def _build_service_cards(self) -> QWidget:

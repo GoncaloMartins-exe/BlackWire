@@ -17,6 +17,28 @@ SIDEBAR_WIDTH = 200
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+BW_PILL_STYLE = f"""
+    QLabel, QPushButton {{
+        background-color: rgba(255, 255, 255, 15);
+        border: 1px solid rgba(255, 255, 255, 25);
+        border-radius: 8px;
+        color: {BW_TEXT_DIM};
+        font-size: 11px;
+        padding: 5px 14px;
+    }}
+    QPushButton:hover {{
+        background-color: rgba(255, 255, 255, 20);
+        color: {BW_TEXT};
+    }}
+"""
+
+BW_CARD_STYLE = """
+    QWidget {
+        background-color: rgba(255, 255, 255, 5);
+        border: 1px solid rgba(255, 255, 255, 10);
+        border-radius: 8px;
+    }
+"""
 
 def load_image(
     filename: str,
@@ -98,21 +120,6 @@ def format_bytes(num_bytes: int) -> tuple[str, str]:
             return f"{size:.1f}", unit
         size /= 1024
 
-BW_PILL_STYLE = f"""
-    QLabel, QPushButton {{
-        background-color: rgba(255, 255, 255, 15);
-        border: 1px solid rgba(255, 255, 255, 25);
-        border-radius: 8px;
-        color: {BW_TEXT_DIM};
-        font-size: 11px;
-        padding: 5px 14px;
-    }}
-    QPushButton:hover {{
-        background-color: rgba(255, 255, 255, 20);
-        color: {BW_TEXT};
-    }}
-"""
-
 def make_pill_label(text: str) -> QLabel:
     lbl = QLabel(text)
     lbl.setStyleSheet(BW_PILL_STYLE)
@@ -125,3 +132,17 @@ def make_pill_button(text: str, margin_left: int = 0) -> QPushButton:
         style += f" QPushButton {{ margin-left: {margin_left}px; }}"
     btn.setStyleSheet(style)
     return btn
+
+def make_widget_card(title: str, widget: QWidget) -> QWidget:
+    card = QWidget()
+    card.setStyleSheet(BW_CARD_STYLE)
+    layout = QVBoxLayout(card)
+    layout.setAlignment(Qt.AlignCenter)
+    layout.setSpacing(10)
+    layout.setContentsMargins(0, 24, 0, 24)
+    layout.addWidget(
+        make_label(title, color=BW_TEXT_DIM, size=10,
+                   letter_spacing="1.5px", align=Qt.AlignCenter)
+    )
+    layout.addWidget(widget, alignment=Qt.AlignCenter)
+    return card
