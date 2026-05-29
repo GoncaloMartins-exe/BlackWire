@@ -11,18 +11,6 @@ from ui.widgets.toast_notification import ToastNotification
 
 # Utilities ────────────────────────────────────────────────────────────────
 
-def format_bytes(num_bytes: int) -> tuple[str, str]:
-    units = ["B", "KB", "MB", "GB", "TB", "PB"]
-
-    size = float(num_bytes)
-
-    for unit in units:
-        if size < 1024 or unit == units[-1]:
-            return f"{size:.1f}", unit
-
-        size /= 1024
-
-
 _CARD_STYLE = """
     QWidget {
         background-color: rgba(255, 255, 255, 5);
