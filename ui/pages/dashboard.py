@@ -19,36 +19,6 @@ _CARD_STYLE = """
     }
 """
 
-_PILL_STYLE = f"""
-    QLabel, QPushButton {{
-        background-color: rgba(255, 255, 255, 15);
-        border: 1px solid rgba(255, 255, 255, 25);
-        border-radius: 8px;
-        color: {BW_TEXT_DIM};
-        font-size: 11px;
-        padding: 5px 14px;
-    }}
-"""
-
-_REFRESH_HOVER = f"""
-    QPushButton:hover {{
-        background-color: rgba(255, 255, 255, 20);
-        color: {BW_TEXT};
-    }}
-"""
-
-
-def _make_pill_label(text: str) -> QLabel:
-    lbl = QLabel(text)
-    lbl.setStyleSheet(_PILL_STYLE)
-    return lbl
-
-
-def _make_refresh_button() -> QPushButton:
-    btn = QPushButton("⟳  Refresh")
-    btn.setStyleSheet(_PILL_STYLE + _REFRESH_HOVER + "QPushButton { margin-left: 12px; }")
-    return btn
-
 
 def _make_gauge_card(gauge: CircularGauge) -> QWidget:
     card = QWidget()
@@ -116,10 +86,10 @@ class DashboardPage(QWidget):
         layout.addWidget(make_label("Dashboard", color=BW_TEXT, size=20, bold=True))
         layout.addStretch()
 
-        self._uptime_label = _make_pill_label("Uptime: -")
+        self._uptime_label = make_pill_label("Uptime: -")
         layout.addWidget(self._uptime_label)
 
-        self._refresh_btn = _make_refresh_button()
+        self._refresh_btn = make_pill_button("⟳  Refresh", margin_left=12)
         self._refresh_btn.clicked.connect(self._on_refresh)
         layout.addWidget(self._refresh_btn)
 

@@ -73,21 +73,7 @@ _COMBO_STYLE = f"""
     }}
 """
 
-_ADD_BTN_STYLE = f"""
-    QPushButton {{
-        background-color: rgba(255, 255, 255, 15);
-        border: 1px solid rgba(255, 255, 255, 25);
-        border-radius: 8px;
-        color: {BW_TEXT_DIM};
-        font-size: 11px;
-        padding: 5px 14px;
-        margin-left: 12px;
-    }}
-    QPushButton:hover {{
-        background-color: rgba(255, 255, 255, 20);
-        color: {BW_TEXT};
-    }}
-"""
+_ADD_BTN_STYLE = BW_PILL_STYLE + " QPushButton { margin-left: 12px; }"
 
 _CANCEL_BTN_STYLE = f"""
     QPushButton {{

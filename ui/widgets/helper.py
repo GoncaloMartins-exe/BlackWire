@@ -1,6 +1,6 @@
 import os
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel, QWidget, QVBoxLayout, QHBoxLayout
+from PySide6.QtWidgets import QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout
 from PySide6.QtGui import QPixmap
 
 # Paleta de cores BlackWire ────────────────────────────────
@@ -97,3 +97,31 @@ def format_bytes(num_bytes: int) -> tuple[str, str]:
         if size < 1024 or unit == units[-1]:
             return f"{size:.1f}", unit
         size /= 1024
+
+BW_PILL_STYLE = f"""
+    QLabel, QPushButton {{
+        background-color: rgba(255, 255, 255, 15);
+        border: 1px solid rgba(255, 255, 255, 25);
+        border-radius: 8px;
+        color: {BW_TEXT_DIM};
+        font-size: 11px;
+        padding: 5px 14px;
+    }}
+    QPushButton:hover {{
+        background-color: rgba(255, 255, 255, 20);
+        color: {BW_TEXT};
+    }}
+"""
+
+def make_pill_label(text: str) -> QLabel:
+    lbl = QLabel(text)
+    lbl.setStyleSheet(BW_PILL_STYLE)
+    return lbl
+
+def make_pill_button(text: str, margin_left: int = 0) -> QPushButton:
+    btn = QPushButton(text)
+    style = BW_PILL_STYLE
+    if margin_left > 0:
+        style += f" QPushButton {{ margin-left: {margin_left}px; }}"
+    btn.setStyleSheet(style)
+    return btn
