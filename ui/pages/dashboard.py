@@ -266,11 +266,6 @@ class DashboardPage(QWidget):
 
     # UI Updates ____________________________________________________________________
 
-    def update_stats(self, cpu, ram_used, ram_total, storage_free, storage_total):
-        self._cpu.set_value(cpu / 100, f"{cpu:.0f}%")
-        self._ram.set_value(ram_used / ram_total, f"{ram_used:.1f} GB", f"/ {ram_total:.0f} GB")
-        self._storage.set_value(storage_free / storage_total, f"{storage_free:.1f} GB", f"/ {storage_total:.1f}")
-
     def update_uptime(self, seconds: int):
         days,  r    = divmod(seconds, 86400)
         hours, r    = divmod(r, 3600)
