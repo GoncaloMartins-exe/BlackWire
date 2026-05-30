@@ -20,6 +20,8 @@ class DashboardPage(QWidget):
         self.client = client
         self._connection_lost = False
 
+        self.network_interface = "eth0"
+
         self._prev_rx: int | None = None
         self._prev_tx: int | None = None
         self._prev_time: float | None = None
@@ -230,7 +232,7 @@ class DashboardPage(QWidget):
                 return
 
             iface_line = next(
-                (l for l in stdout.splitlines() if l.strip().startswith("eth0:")), None
+                (l for l in stdout.splitlines() if l.strip().startswith(f"{self.network_interface}:")), None
             )
             if not iface_line:
                 return
@@ -252,7 +254,7 @@ class DashboardPage(QWidget):
             up_mbps   = (tx_bytes - self._prev_tx) / dt / (1024 * 1024)
             self._prev_rx, self._prev_tx, self._prev_time = rx_bytes, tx_bytes, now
 
-            self._network.push(up_mbps, down_mbps, iface="eth0", lat_ms=self._fetch_ping())
+            self._network.push(up_mbps, down_mbps, iface=self.network_interface, lat_ms=self._fetch_ping())
 
         except (ValueError, IndexError) as e:
             print("Network refresh error:", e)
