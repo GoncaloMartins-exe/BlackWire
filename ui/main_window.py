@@ -1,14 +1,12 @@
-import sys
-import os
-
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget,
-    QVBoxLayout, QHBoxLayout, QLabel, QStackedWidget
+    QVBoxLayout, QHBoxLayout, QStackedWidget
 )
-from PySide6.QtGui import QFont
+
 from ui.pages.dashboard import DashboardPage
 from ui.pages.home import HomePage
+from ui.pages.logs_page import LogsPage
 from ui.widgets.helper import *
 
 _SIDEBAR_BTN_TEXT = f"color: {{color}}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;"
@@ -231,6 +229,15 @@ class MainWindow(QMainWindow):
             self._stack.addWidget(dashboard)
         else:
             dashboard.attach_session(server, client)
+
+        logs_page = self._pages.get("Logs")
+
+        if not isinstance(logs_page, LogsPage):
+            logs_page = LogsPage(server, client)
+            self._pages["Logs"] = logs_page
+            self._stack.addWidget(logs_page)
+        else:
+            logs_page.attach_session(server, client)
 
         self._navigate("Dashboard")
 
