@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QPlainTextEdit)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QPlainTextEdit, QLineEdit)
 from PySide6.QtGui import QFont
 from ui.widgets.helper import *
 
@@ -35,7 +35,8 @@ class LogsPage(QWidget):
         self._log_selector.addItems([
             "System / Service (journalctl)",
             "Kernel Ring Buffer (dmesg)",
-            "Authentication (auth.log)"
+            "Authentication (auth.log)",
+            "Custom Log File"
         ])
         self._log_selector.setStyleSheet(f"""
             QComboBox {{
@@ -48,6 +49,14 @@ class LogsPage(QWidget):
         """)
         self._log_selector.currentIndexChanged.connect(self._on_log_changed)
         header_layout.addWidget(self._log_selector)
+
+        self._custom_log_path = QLineEdit()
+        self._custom_log_path.setPlaceholderText(
+            "/var/log/nginx/access.log"
+        )
+        self._custom_log_path.hide()
+
+        header_layout.addWidget(self._custom_log_path)
 
         self._refresh_btn = QPushButton("⟳  Refresh")
         self._refresh_btn.setStyleSheet(BW_PILL_STYLE) # Reutilizamos o estilo do helper
@@ -86,6 +95,10 @@ class LogsPage(QWidget):
         self._timer.start()
 
     def _on_log_changed(self):
+        self._custom_log_path.setVisible(
+            self._log_selector.currentIndex() == 3
+        )
+
         self._log_display.clear()
         self._log_display.setPlainText("Loading logs...")
         self.refresh_logs()
@@ -104,6 +117,17 @@ class LogsPage(QWidget):
             cmd = "dmesg | tail -n 100"
         elif log_type == 2:
             cmd = "tail -n 100 /var/log/auth.log 2>/dev/null || tail -n 100 /var/log/secure"
+        elif log_type == 3:
+            path = self._custom_log_path.text().strip()
+
+            if not path:
+                self._log_display.setPlainText(
+                    "Introduz o caminho do ficheiro de log."
+                )
+                self._refresh_btn.setEnabled(True)
+                return
+
+            cmd = f"tail -n 100 '{path}'"
         
         try:
             result = self.client.execute(cmd)
