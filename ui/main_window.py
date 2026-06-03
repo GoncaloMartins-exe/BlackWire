@@ -241,5 +241,19 @@ class MainWindow(QMainWindow):
 
         self._navigate("Dashboard")
 
+    def closeEvent(self, event):
+        if hasattr(self, '_home_page') and hasattr(self._home_page, '_checker'):
+            self._home_page._checker.shutdown()
+
+        for page_name, page_widget in self._pages.items():
+            if hasattr(page_widget, 'client') and page_widget.client is not None:
+                try:
+                    page_widget.client.close()
+                except Exception as e:
+                    type_error = type(e).__name__
+                    print(f"Exception [{type_error}]: '{e}' closing the page {page_name}")
+
+        event.accept()
+
     def on_quit(self):
-        self._home_page._checker.shutdown()
+        pass
