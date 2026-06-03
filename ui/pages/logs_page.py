@@ -41,8 +41,9 @@ class LogsPage(QWidget):
         self.setStyleSheet(f"background-color: {BW_BG};")
         self._setup_ui()
 
-        self._timer = QTimer(self, interval=15000)
+        self._timer = QTimer(self, interval=5000)
         self._timer.timeout.connect(self.refresh_logs)
+        self._timer.start()
 
     def _setup_ui(self):
         root = QVBoxLayout(self)
