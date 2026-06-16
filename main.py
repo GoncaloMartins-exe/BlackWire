@@ -1,13 +1,12 @@
 import sys
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow
+from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from ui.main_window import MainWindow
 from pathlib import Path
 
 def resource_path(path):
-    if hasattr(sys, "_MEIPASS"):
-        return str(Path(sys._MEIPASS) / path)
-    return path
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    return str(base / path)
 
 app = QApplication(sys.argv)
 app.setApplicationName("BlackWire")

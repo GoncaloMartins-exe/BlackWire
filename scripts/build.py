@@ -19,10 +19,10 @@ def main():
 
     cmd = [
         "pyinstaller",
+        "--clean",
         "--onefile",
         "--windowed",
-        "--name",
-        "BlackWire",
+        "--name", "BlackWire",
         f"--add-data={add_data}",
         f"--icon={icon_path}",
         "main.py"
