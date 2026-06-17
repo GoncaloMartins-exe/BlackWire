@@ -82,8 +82,12 @@ class ServerChecker:
         self._running = set()
 
     def check(self, server: dict, key: str, callback):        
-        self._running.add(key)
         existing = self.connections.get(key)
+
+        if existing and not existing.is_active():
+            self.disconnect(key)
+            existing = None
+
         task = ServerCheckTask(server, key, existing_client=existing)
         self._tasks.add(task)
 
@@ -99,7 +103,11 @@ class ServerChecker:
     def disconnect(self, key: str):
         client = self.connections.pop(key, None)
         if client:
-            client.close()
+            try:
+                if client.client:
+                    client.client.close()
+            except:
+                pass
 
     def _on_checked(self, key: str, online: bool, client, callback, task):
         self._tasks.discard(task)

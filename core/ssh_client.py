@@ -45,16 +45,27 @@ class SSHClient:
 
         self.client.connect(**kwargs)
 
-    def execute(self, command):
+    def execute(self, command, timeout=3):
         if not self.client:
             raise RuntimeError("SSH não conectado.")
 
-        stdin, stdout, stderr = self.client.exec_command(command)
+        try:
+            stdin, stdout, stderr = self.client.exec_command(command, timeout=timeout)
+            
+            stdout.channel.settimeout(timeout)
+            stderr.channel.settimeout(timeout)
 
-        return {
-            "stdout": stdout.read().decode(errors="ignore"),
-            "stderr": stderr.read().decode(errors="ignore"),
-        }
+            return {
+                "stdout": stdout.read().decode(errors="ignore"),
+                "stderr": stderr.read().decode(errors="ignore"),
+            }
+        except Exception as e:
+            raise ConnectionError(f"Ligação perdida ou expirada: {e}")
+    
+    def is_active(self):
+        if self.client and self.client.get_transport():
+            return self.client.get_transport().is_active()
+        return False
 
     def close(self):
         if self.client:
