@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QL
 from ui.widgets.helper import *
 from ui.widgets.network_widget import NetworkWidget
 from ui.widgets.circular_gauge_widget import CircularGauge
+from ui.widgets.server_card import server_key
 from ui.widgets.service_card_widget import ServiceCard
 from ui.widgets.toast_notification import ToastNotification
 
@@ -127,23 +128,17 @@ class DashboardPage(QWidget):
 
     # Data Refresh ____________________________________________________________________
 
-    def run_command(self, cmd: str) -> dict | None:
+    def run_command(self, cmd: str):
         if not self.client:
-            self.handle_connection_lost()
+            return None
+            
+        if getattr(self, '_connection_lost', False):
             return None
 
         try:
-            result = self.client.execute(cmd)
-
-            if result is None:
-                self.handle_connection_lost()
-                return None
-
-            self.handle_reconnected()
-
-            return result
-
-        except Exception:
+            return self.client.execute(cmd)
+        except Exception as e:
+            print(f"Erro crítico no SSH ao executar '{cmd}': {e}")
             self.handle_connection_lost()
             return None
 
@@ -294,8 +289,25 @@ class DashboardPage(QWidget):
             return
 
         self._connection_lost = True
+        
+        if self.client:
+            self.client.close()
+            self.client = None
+
+        if hasattr(self.server, 'checker'):
+             self.server.checker.disconnect(server_key(self.server))
 
         self._disconnect_popup.show_animation()
+
+        if hasattr(self, '_stats_timer'): self._stats_timer.stop()
+        if hasattr(self, '_uptime_timer'): self._uptime_timer.stop()
+        if hasattr(self, '_network_timer'): self._network_timer.stop()
+        if hasattr(self, '_test_timer'): self._test_timer.stop()
+
+        self._cpu.set_value(0, "OFF")
+        self._ram.set_value(0, "OFF", "")
+        self._storage.set_value(0, "OFF", "")
+        self._uptime_label.setText("Uptime: Offline")
 
     def handle_reconnected(self):
         if not self._connection_lost:

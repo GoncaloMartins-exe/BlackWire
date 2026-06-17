@@ -223,11 +223,17 @@ class HomePage(QWidget):
             key = server_key(server)
 
             card = self._cards.get(key)
+            
+            client = self._checker.get_connection(key)
+            
+            if client and not client.is_active():
+                self._checker.disconnect(key)
+                if card: 
+                    card.set_status("offline")
+                continue
+
             if card:
                 card.set_status("checking")
-
-            if self._checker._running and key in self._checker._running:
-                continue
 
             self._checker.check(
                 server,
@@ -242,6 +248,7 @@ class HomePage(QWidget):
             return
 
         card.set_status("online" if online else "offline")
+        card.setEnabled(online)
 
     def _manual_refresh(self):
         self._refresh_btn.setEnabled(False)
@@ -258,9 +265,18 @@ class HomePage(QWidget):
         key = server_key(server)
         client = self._checker.get_connection(key)
 
+        if client and not client.is_active():
+            self._checker.disconnect(key)
+            card = self._cards.get(key)
+            if card: 
+                card.set_status("offline")
+            return
+        
         if not client:
-            self._checker.reset_running()
-            self._refresh_server_status()
+            card = self._cards.get(key)
+            if card: 
+                card.set_status("checking")
+            self._checker.check(server, key, self._on_server_checked)
             return
     
         self.server_selected.emit({
