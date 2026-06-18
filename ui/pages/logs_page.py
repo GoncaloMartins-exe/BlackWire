@@ -2,6 +2,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPlainTextEdit, QLineEdit
 from PySide6.QtGui import QFont
 from ui.widgets.helper import *
+from ui.widgets.toast_notification import ToastNotification
 
 LOG_COMMANDS = [
     ("System / Service (journalctl)", "journalctl -n 100 --no-pager"),
@@ -38,6 +39,7 @@ class LogsPage(QWidget):
         super().__init__(parent)
         self.server = server
         self.client = client
+        self._connection_lost = False
         self.setStyleSheet(f"background-color: {BW_BG};")
         self._setup_ui()
 
@@ -49,6 +51,9 @@ class LogsPage(QWidget):
         root = QVBoxLayout(self)
         root.setContentsMargins(24, 24, 24, 40)
         root.setSpacing(16)
+
+        self._disconnect_popup = ToastNotification(self, "SSH connection lost")
+        self._disconnect_popup.hide()
 
         # Header
         self._log_selector = QComboBox(styleSheet=COMBO_STYLE)
@@ -74,8 +79,22 @@ class LogsPage(QWidget):
         self._log_display.setFont(QFont("Consolas", 10))
         root.addWidget(self._log_display)
 
+    def _handle_connection_lost(self):
+        if self._connection_lost:
+            return
+        self._connection_lost = True
+        self._disconnect_popup.show_animation()
+
+    def _handle_reconnected(self):
+        if not self._connection_lost:
+            return
+        self._connection_lost = False
+        self._disconnect_popup.hide()
+
     def attach_session(self, server, client):
         self.server, self.client = server, client
+        self._connection_lost = False
+        self._disconnect_popup.hide()
         self.refresh_logs()
         self._timer.start()
 
@@ -110,7 +129,9 @@ class LogsPage(QWidget):
             output = (result or {}).get("stdout", "").strip()
             self._log_display.setPlainText(output or "O ficheiro de log está vazio ou não foi encontrado.")
             self._scroll_to_bottom()
+            self._handle_reconnected()
         except Exception as e:
             self._log_display.setPlainText(f"Erro ao ler logs: {e}")
+            self._handle_connection_lost()
 
         QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
