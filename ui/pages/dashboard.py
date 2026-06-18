@@ -138,7 +138,6 @@ class DashboardPage(QWidget):
         try:
             return self.client.execute(cmd)
         except Exception as e:
-            print(f"Erro crítico no SSH ao executar '{cmd}': {e}")
             self.handle_connection_lost()
             return None
 
