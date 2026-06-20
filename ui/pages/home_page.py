@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
 )
 from ui.widgets.helper import *
 from ui.widgets.add_server_widget import AddServerForm, _ADD_BTN_STYLE
-from ui.widgets.server_card import ServerCard, server_key
+from ui.widgets.server_card_widget import ServerCard, server_key
 from core.storage import ServerManager
 from core.server_checker import ServerChecker
 

@@ -2,7 +2,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPlainTextEdit, QLineEdit
 from PySide6.QtGui import QFont
 from ui.widgets.helper import *
-from ui.widgets.toast_notification import ToastNotification
+from ui.widgets.toast_notification_widget import ToastNotification
 
 LOG_COMMANDS = [
     ("System / Service (journalctl)", "journalctl -n 100 --no-pager"),

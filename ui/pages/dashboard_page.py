@@ -5,9 +5,9 @@ from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QL
 from ui.widgets.helper import *
 from ui.widgets.network_widget import NetworkWidget
 from ui.widgets.circular_gauge_widget import CircularGauge
-from ui.widgets.server_card import server_key
+from ui.widgets.server_card_widget import server_key
 from ui.widgets.service_card_widget import ServiceCard
-from ui.widgets.toast_notification import ToastNotification
+from ui.widgets.toast_notification_widget import ToastNotification
 
 
 # Dashboard Page _________________________________________________________________

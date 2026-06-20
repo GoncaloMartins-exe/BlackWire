@@ -4,8 +4,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QStackedWidget
 )
 
-from ui.pages.dashboard import DashboardPage
-from ui.pages.home import HomePage
+from ui.pages.dashboard_page import DashboardPage
+from ui.pages.home_page import HomePage
 from ui.pages.logs_page import LogsPage
 from ui.widgets.helper import *
 
