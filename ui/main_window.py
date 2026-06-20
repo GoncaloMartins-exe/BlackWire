@@ -178,7 +178,7 @@ class MainWindow(QMainWindow):
         self._pages = {
             "Home":      self._home_page,
             "Dashboard": QWidget(),
-            "Logs":      self._placeholder("Logs"),
+            "Logs":      QWidget(),
             "Files":     self._placeholder("Files"),
             "Settings":  self._placeholder("Settings"),
         }

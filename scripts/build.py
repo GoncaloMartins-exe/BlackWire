@@ -10,7 +10,10 @@ def main():
 
     is_windows = sys.platform.startswith("win")
 
-    icon_path = project_root / "assets" / "icons" / "LogoBlackWire.png"
+    if is_windows:
+        icon_path = project_root / "assets" / "icons" / "LogoBlackWire.ico"
+    else:
+        icon_path = project_root / "assets" / "icons" / "LogoBlackWire.png"
 
     if is_windows:
         add_data = f"assets;assets"
