@@ -24,6 +24,7 @@ class ServerCard(QWidget):
     def __init__(self, server: dict, parent=None):
         super().__init__(parent)
         self._server = server
+        self._state = "checking"
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setCursor(Qt.PointingHandCursor)
         self.setFixedHeight(110)
@@ -91,7 +92,7 @@ class ServerCard(QWidget):
         edit_layout.addWidget(edit_icon)
         edit_layout.addWidget(edit_text)
 
-        edit_container.mousePressEvent = lambda e: self.edit_req.emit(self._server)
+        edit_container.mousePressEvent = self._on_edit
 
         # =========================================================
         # Delete button
@@ -157,6 +158,9 @@ class ServerCard(QWidget):
         outer.addLayout(bottom)
 
         self.set_status("checking")
+
+    def _on_edit(self, e):
+        self.edit_req.emit(self._server)
 
     def _on_delete(self, _e):
         msg = QMessageBox(self)
@@ -226,6 +230,7 @@ class ServerCard(QWidget):
 
     def set_status(self, state: str):
         """state: 'online' | 'offline' | 'checking'"""
+        self._state = state
         text, color, bg, border = _STATUS_STYLES.get(state, _STATUS_STYLES["checking"])
         self._status_badge.setText(text)
         self._status_badge.setStyleSheet(f"""
@@ -238,6 +243,9 @@ class ServerCard(QWidget):
                 font-size: 10px;
             }}
         """)
+
+    def setEnabled(self, enabled: bool):
+        super().setEnabled(True)
 
     def _set_style(self, hover: bool):
         self.setStyleSheet(f"""
@@ -252,5 +260,5 @@ class ServerCard(QWidget):
     def leaveEvent(self, e): self._set_style(False)
 
     def mousePressEvent(self, e):
-        if e.button() == Qt.LeftButton:
+        if e.button() == Qt.LeftButton and self._state != "offline":
             self.clicked.emit(self._server)
