@@ -1,9 +1,13 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtWidgets import (
     QPushButton, QStackedWidget, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QComboBox, QSizePolicy
 )
 from ui.widgets.helper import *
+from ui.widgets.icon_picker import (
+    IconPickerDialog, DEFAULT_SERVER_ICON, server_icon_path
+)
 from PySide6.QtWidgets import QFileDialog
 
 _INPUT_STYLE = f"""
@@ -105,6 +109,19 @@ _SUBMIT_BTN_STYLE = f"""
     }}
 """
 
+_ICON_BTN_STYLE = f"""
+    QPushButton {{
+        background-color: rgba(255, 255, 255, 8);
+        border: 1px solid rgba(255, 255, 255, 18);
+        border-radius: 20px;
+    }}
+    QPushButton:hover {{
+        border: 1px solid {BW_CYAN};
+        background-color: rgba(255, 255, 255, 14);
+    }}
+"""
+
+
 class AddServerForm(QWidget):
 
     submitted = Signal(dict)
@@ -121,6 +138,7 @@ class AddServerForm(QWidget):
                 border-radius: 12px;
             }
         """)
+        self._selected_icon = DEFAULT_SERVER_ICON
         self._build()
 
     def _build(self):
@@ -133,6 +151,19 @@ class AddServerForm(QWidget):
         # ======================================================================
         title_row = QHBoxLayout()
         title_row.setContentsMargins(0, 0, 0, 0)
+        title_row.setSpacing(10)
+
+        self._icon_btn = QPushButton()
+        self._icon_btn.setFixedSize(40, 40)
+        self._icon_btn.setCursor(Qt.PointingHandCursor)
+        self._icon_btn.setStyleSheet(_ICON_BTN_STYLE)
+        self._icon_btn.setIconSize(QSize(26, 26))
+        self._icon_btn.setToolTip("Choose server icon")
+        self._icon_btn.clicked.connect(self._open_icon_picker)
+        self._refresh_icon_button()
+
+        title_row.addWidget(self._icon_btn)
+
         self._title = make_label("New server",color=BW_TEXT,size=13,bold=True)
         title_row.addWidget(self._title)
         title_row.addStretch()
@@ -300,6 +331,18 @@ class AddServerForm(QWidget):
         if path:
             self._key_path.setText(path)
 
+    def _open_icon_picker(self):
+        dialog = IconPickerDialog(current_icon=self._selected_icon, parent=self)
+        if dialog.exec() == IconPickerDialog.Accepted:
+            self._selected_icon = dialog.selected_icon()
+            self._refresh_icon_button()
+
+    def _refresh_icon_button(self):
+        pixmap = QPixmap(server_icon_path(self._selected_icon))
+        if not pixmap.isNull():
+            self._icon_btn.setIcon(QIcon(pixmap))
+        else:
+            self._icon_btn.setIcon(QIcon())
 
     def _update_auth_visibility(self):
         is_key = self._auth.currentText() == "key"
@@ -348,6 +391,7 @@ class AddServerForm(QWidget):
             "auth": self._auth.currentText(),
             "password": self._password.text().strip(),
             "key_path": self._key_path.text().strip(),
+            "icon": self._selected_icon,
         })
 
     def clear(self):
@@ -357,6 +401,9 @@ class AddServerForm(QWidget):
             child.clear()
         for field in (self._name, self._host, self._user):
             field.setStyleSheet(_INPUT_STYLE)
+
+        self._selected_icon = DEFAULT_SERVER_ICON
+        self._refresh_icon_button()
 
     def set_data(self, server: dict):
         self.set_edit_mode(True)
@@ -369,6 +416,9 @@ class AddServerForm(QWidget):
         self._auth.setCurrentText(auth)
         self._password.setText(server.get("password", ""))
         self._key_path.setText(server.get("key_path", ""))
+
+        self._selected_icon = server.get("icon") or DEFAULT_SERVER_ICON
+        self._refresh_icon_button()
 
         self._update_auth_visibility()
 
