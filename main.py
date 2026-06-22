@@ -1,4 +1,5 @@
 import sys
+import signal
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from ui.main_window import MainWindow
@@ -17,5 +18,5 @@ window = MainWindow()
 window.show()
 
 app.aboutToQuit.connect(window.on_quit)
-
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 sys.exit(app.exec())
