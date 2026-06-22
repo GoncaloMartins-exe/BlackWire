@@ -8,6 +8,7 @@ from ui.widgets.circular_gauge_widget import CircularGauge
 from ui.widgets.server_card_widget import server_key
 from ui.widgets.service_card_widget import ServiceCard
 from ui.widgets.toast_notification_widget import ToastNotification
+from ui.widgets.cpu_temp_widget import CpuTempCard
 
 
 # Dashboard Page _________________________________________________________________
@@ -35,6 +36,7 @@ class DashboardPage(QWidget):
         self._stats_timer   = self._setup_timer(2000,  self.refresh_cpu_ram)
         self._uptime_timer  = self._setup_timer(60000, self.refresh_uptime)
         self._network_timer = self._setup_timer(5000,  self.refresh_network, call_immediately=True)
+        self._temp_timer    = self._setup_timer(5000, self.refresh_cpu_temp, call_immediately=True)
 
     # UI Construction ____________________________________________________________
 
@@ -80,6 +82,7 @@ class DashboardPage(QWidget):
         self._cpu.set_value(1, "100%")
         self._ram.set_value(0.5, "0 GB", "/ 0 GB")
         self._storage.set_value(0, "0 GB", "/ 0 GB")
+        self._cpu_temp = CpuTempCard()
 
         container = QWidget()
         container.setStyleSheet("background: transparent;")
@@ -87,7 +90,7 @@ class DashboardPage(QWidget):
         layout.setSpacing(20)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        for gauge in [self._cpu, self._ram, self._storage]:
+        for gauge in [self._cpu, self._ram, self._storage, self._cpu_temp]:
             layout.addWidget(make_widget_card(gauge.title, gauge), stretch=1)
 
         return container
@@ -122,7 +125,7 @@ class DashboardPage(QWidget):
         return timer
 
     def _restart_timers(self):
-        for timer in [self._stats_timer, self._uptime_timer, self._network_timer]:
+        for timer in [self._stats_timer, self._uptime_timer, self._network_timer, self._temp_timer]:
             timer.stop()
             timer.start()
 
@@ -259,6 +262,16 @@ class DashboardPage(QWidget):
             return float(stdout) if stdout else None
         except ValueError:
             return None
+        
+    def refresh_cpu_temp(self):
+        if not self.client:
+            return
+        try:
+            stdout = self._get_stdout("cat /sys/class/thermal/thermal_zone0/temp")
+            if stdout:
+                self._cpu_temp.update_temp(float(stdout) / 1000.0)
+        except Exception as e:
+            print("CPU temp refresh error:", e)
 
     # UI Updates ____________________________________________________________________
 
@@ -307,6 +320,7 @@ class DashboardPage(QWidget):
         self._ram.set_value(0, "OFF", "")
         self._storage.set_value(0, "OFF", "")
         self._uptime_label.setText("Uptime: Offline")
+        self._cpu_temp.reset()
 
     def handle_reconnected(self):
         if not self._connection_lost:
