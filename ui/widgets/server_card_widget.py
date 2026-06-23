@@ -1,6 +1,8 @@
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox
 from ui.widgets.helper import *
+from ui.widgets.icon_picker import DEFAULT_SERVER_ICON, server_icon_path
 
 _STATUS_STYLES = {
     #              text         text color       bg color               border color
@@ -38,8 +40,14 @@ class ServerCard(QWidget):
         top.setSpacing(12)
         top.setContentsMargins(0, 0, 0, 0)
 
-        icon = load_image("server.png", 28, 28)
+        icon_filename = server.get("icon") or DEFAULT_SERVER_ICON
+        icon = QLabel()
+        icon.setFixedSize(36, 36)
+        icon.setAlignment(Qt.AlignCenter)
         icon.setStyleSheet("background: transparent; border: none;")
+        pixmap = QPixmap(server_icon_path(icon_filename))
+        if not pixmap.isNull():
+            icon.setPixmap(pixmap.scaled(QSize(28, 28), Qt.KeepAspectRatio, Qt.SmoothTransformation))
         top.addWidget(icon)
 
         name_col = QWidget()
