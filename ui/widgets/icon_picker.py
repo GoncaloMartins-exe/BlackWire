@@ -17,7 +17,7 @@ _SUPPORTED_EXTS = (".png", ".jpg", ".jpeg", ".svg", ".webp")
 
 _DIALOG_STYLE = f"""
     QDialog {{
-        background-color: #1e1e2a;
+        background-color: {BW_BG};
         border: 1px solid rgba(255, 255, 255, 14);
         border-radius: 12px;
     }}
@@ -27,16 +27,25 @@ _DIALOG_STYLE = f"""
     }}
     QScrollBar:vertical {{
         background: transparent;
-        width: 8px;
-        margin: 0;
+        width: 10px;
+        margin: 4px 0 0 0;
     }}
     QScrollBar::handle:vertical {{
-        background: rgba(255, 255, 255, 30);
-        border-radius: 4px;
-        min-height: 24px;
+        background-color: rgba(255, 255, 255, 15);
+        border-radius: 5px;
+        min-height: 30px;
     }}
-    QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+    QScrollBar::handle:vertical:hover {{
+        background-color: rgba(255, 255, 255, 20);
+    }}
+    QScrollBar::add-line:vertical,
+    QScrollBar::sub-line:vertical {{
         height: 0;
+        background: none;
+    }}
+    QScrollBar::add-page:vertical,
+    QScrollBar::sub-page:vertical {{
+        background: transparent;
     }}
 """
 
@@ -108,6 +117,8 @@ class IconPickerDialog(QDialog):
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+        scroll.viewport().setStyleSheet("background: transparent;")
 
         grid_holder = QWidget()
         grid_holder.setStyleSheet("background: transparent;")
