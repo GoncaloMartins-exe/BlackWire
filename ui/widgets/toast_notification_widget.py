@@ -13,15 +13,15 @@ class ToastNotification(QWidget):
 
         self.setStyleSheet("""
             ToastNotification {
-                background-color: rgba(244, 67, 54, 28);
-                border: 1px solid rgba(244, 67, 54, 140);
+                background-color: rgba(244, 67, 54, 220);
+                border: 1px solid rgba(244, 67, 54, 255);
                 border-radius: 8px;
             }
 
             QLabel {
                 background: transparent;
                 border: none;
-                color: #FF8A80;
+                color: #FFFFFF;
                 font-size: 11px;
                 font-weight: 600;
             }
