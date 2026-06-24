@@ -22,14 +22,35 @@ COMBO_STYLE = f"""
 """
 
 LOG_DISPLAY_STYLE = f"""
-    QPlainTextEdit {{
+    QPlainTextEdit, QPlainTextEdit viewport{{
         background-color: {BW_SURFACE};
         border: 1px solid {BW_BORDER};
         border-radius: 8px;
         color: {BW_GREEN};
         padding: 12px;
-        selection-background-color: {BW_CYAN};
-        selection-color: {BW_SURFACE};
+    }}
+    QScrollBar:vertical {{
+        background-color: {BW_SURFACE};
+        width: 10px;
+        margin: 0;
+        border: none;
+    }}
+    QScrollBar::handle:vertical {{
+        background-color: rgba(255, 255, 255, 15);
+        border-radius: 5px;
+        min-height: 30px;
+    }}
+    QScrollBar::handle:vertical:hover {{
+        background-color: rgba(255, 255, 255, 20);
+    }}
+    QScrollBar::add-line:vertical,
+    QScrollBar::sub-line:vertical {{
+        height: 0;
+        background: none;
+    }}
+    QScrollBar::add-page:vertical,
+    QScrollBar::sub-page:vertical {{
+        background-color: {BW_SURFACE};
     }}
 """
 
