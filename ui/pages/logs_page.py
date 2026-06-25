@@ -64,9 +64,8 @@ class LogsPage(QWidget):
         self.setStyleSheet(f"background-color: {BW_BG};")
         self._setup_ui()
 
-        self._timer = QTimer(self, interval=5000)
+        self._timer = QTimer(self, interval=3000)
         self._timer.timeout.connect(self.refresh_logs)
-        self._timer.start()
 
     def _setup_ui(self):
         root = QVBoxLayout(self)
@@ -116,13 +115,20 @@ class LogsPage(QWidget):
         self.server, self.client = server, client
         self._connection_lost = False
         self._disconnect_popup.hide()
-        self.refresh_logs()
+        self._timer.stop()
         self._timer.start()
 
     def _on_log_changed(self):
         self._custom_path.setVisible(self._log_selector.currentIndex() == 3)
         self._log_display.setPlainText("Loading logs...")
         self.refresh_logs()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self.client:
+            self.refresh_logs()
+            if not self._timer.isActive():
+                self._timer.start()
 
     def _scroll_to_bottom(self):
         sb = self._log_display.verticalScrollBar()
@@ -154,5 +160,7 @@ class LogsPage(QWidget):
         except Exception as e:
             self._log_display.setPlainText(f"Erro ao ler logs: {e}")
             self._handle_connection_lost()
-
-        QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
+        finally:
+            QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
+            if not self._timer.isActive():
+                self._timer.start()
