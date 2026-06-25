@@ -169,6 +169,14 @@ class HomePage(QWidget):
         self._refresh_grid()
         self._hide_form()
 
+    def _on_disconnect(self, server: dict):
+        key = server_key(server)
+        self._checker.disconnect(key)
+        card = self._cards.get(key)
+        if card:
+            card.set_connected(False)
+            card.set_status("online")
+
     # ======================================================================
     # Grid
     # ======================================================================
@@ -190,6 +198,7 @@ class HomePage(QWidget):
             card.clicked.connect(self._on_server_clicked)
             card.delete_req.connect(self._delete_server)
             card.edit_req.connect(self._edit_server)
+            card.disconnect_req.connect(self._on_disconnect)
             self._grid.addWidget(card, i // cols, i % cols)
 
         self._refresh_server_status()
@@ -248,7 +257,8 @@ class HomePage(QWidget):
             return
 
         card.set_status("online" if online else "offline")
-        card.setEnabled(online)
+        if not online:
+            card.set_connected(False)
 
     def _manual_refresh(self):
         self._refresh_btn.setEnabled(False)
@@ -283,3 +293,6 @@ class HomePage(QWidget):
             "server": server,
             "client": client
         })
+        card = self._cards.get(key)
+        if card:
+            card.set_connected(True)

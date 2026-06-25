@@ -22,6 +22,7 @@ class ServerCard(QWidget):
     clicked    = Signal(dict)
     delete_req = Signal(dict)
     edit_req   = Signal(dict)
+    disconnect_req = Signal(dict)
 
     def __init__(self, server: dict, parent=None):
         super().__init__(parent)
@@ -165,6 +166,27 @@ class ServerCard(QWidget):
 
         outer.addLayout(bottom)
 
+        self._disconnect_btn = QWidget()
+        self._disconnect_btn.setCursor(Qt.PointingHandCursor)
+        self._disconnect_btn.setVisible(False)
+        self._disconnect_btn.setStyleSheet("""
+            QWidget {
+                background-color: transparent;
+                border: 1px solid rgba(255,68,102,60);
+                border-radius: 4px;
+            }
+            QWidget:hover {
+                background-color: rgba(255,68,102,12);
+                border: 1px solid rgba(255,68,102,120);
+            }
+        """)
+        disc_layout = QHBoxLayout(self._disconnect_btn)
+        disc_layout.setContentsMargins(12, 3, 12, 3)
+        disc_layout.setSpacing(0)
+        disc_layout.addWidget(make_label("Disconnect", color="#ff4466", size=10))
+        self._disconnect_btn.mousePressEvent = lambda e: self.disconnect_req.emit(self._server)
+        outer.addWidget(self._disconnect_btn, alignment=Qt.AlignHCenter)
+
         self.set_status("checking")
 
     def _on_edit(self, e):
@@ -254,6 +276,10 @@ class ServerCard(QWidget):
 
     def setEnabled(self, enabled: bool):
         super().setEnabled(True)
+
+    def set_connected(self, connected: bool):
+        self._disconnect_btn.setVisible(connected)
+        self.setFixedHeight(130 if connected else 110)
 
     def _set_style(self, hover: bool):
         self.setStyleSheet(f"""
