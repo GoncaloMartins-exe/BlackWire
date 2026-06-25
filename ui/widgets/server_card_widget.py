@@ -3,6 +3,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox
 from ui.widgets.helper import *
 from ui.widgets.icon_picker import DEFAULT_SERVER_ICON, server_icon_path
+from ui.widgets.toast_notification_widget import TOAST_RIGHT, TOAST_WARN, ToastNotification
 
 _STATUS_STYLES = {
     #              text         text color       bg color               border color
@@ -184,7 +185,7 @@ class ServerCard(QWidget):
         disc_layout.setContentsMargins(12, 3, 12, 3)
         disc_layout.setSpacing(0)
         disc_layout.addWidget(make_label("Disconnect", color="#ff4466", size=10))
-        self._disconnect_btn.mousePressEvent = lambda e: self.disconnect_req.emit(self._server)
+        self._disconnect_btn.mousePressEvent = lambda e: self._confirm_disconnect()
         outer.addWidget(self._disconnect_btn, alignment=Qt.AlignHCenter)
 
         self.set_status("checking")
@@ -280,6 +281,18 @@ class ServerCard(QWidget):
     def set_connected(self, connected: bool):
         self._disconnect_btn.setVisible(connected)
         self.setFixedHeight(130 if connected else 110)
+
+    def _confirm_disconnect(self):
+        self.disconnect_req.emit(self._server)
+        if self.window():
+            self._toast = ToastNotification(
+                self.window(),
+                "Session disconnected",
+                color=TOAST_WARN,
+                position=TOAST_RIGHT,
+                auto_hide_ms=3000,
+            )
+            self._toast.show_animation()
 
     def _set_style(self, hover: bool):
         self.setStyleSheet(f"""
