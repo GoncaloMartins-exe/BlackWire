@@ -306,6 +306,9 @@ class DashboardPage(QWidget):
             self.client.close()
             self.client = None
 
+        if callable(getattr(self, 'on_connection_lost', None)):
+            self.on_connection_lost(self.server)
+
         if hasattr(self.server, 'checker'):
              self.server.checker.disconnect(server_key(self.server))
 

@@ -283,6 +283,8 @@ class ServerCard(QWidget):
         self.setFixedHeight(130 if connected else 110)
 
     def _confirm_disconnect(self):
+        self.set_connected(False)
+        self.set_status("checking") 
         self.disconnect_req.emit(self._server)
         if self.window():
             self._toast = ToastNotification(

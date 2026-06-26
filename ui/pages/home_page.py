@@ -175,7 +175,7 @@ class HomePage(QWidget):
         card = self._cards.get(key)
         if card:
             card.set_connected(False)
-            card.set_status("online")
+            card.set_status("checking")
 
     # ======================================================================
     # Grid

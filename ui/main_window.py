@@ -8,6 +8,7 @@ from ui.pages.dashboard_page import DashboardPage
 from ui.pages.home_page import HomePage
 from ui.pages.logs_page import LogsPage
 from ui.widgets.helper import *
+from ui.widgets.server_card_widget import server_key
 
 _SIDEBAR_BTN_TEXT = f"color: {{color}}; font-size: 13px; font-weight: 500; border: none; background-color: transparent;"
 
@@ -230,6 +231,8 @@ class MainWindow(QMainWindow):
         else:
             dashboard.attach_session(server, client)
 
+        dashboard.on_connection_lost = self._on_connection_lost
+
         logs_page = self._pages.get("Logs")
 
         if not isinstance(logs_page, LogsPage):
@@ -240,6 +243,19 @@ class MainWindow(QMainWindow):
             logs_page.attach_session(server, client)
 
         self._navigate("Dashboard")
+
+    def _on_connection_lost(self, server: dict):
+        key = server_key(server)
+        card = self._home_page._cards.get(key)
+        if card:
+            card.set_connected(False)
+            card.set_status("checking")
+        
+        self._home_page._checker.check(
+            server,
+            key,
+            self._home_page._on_server_checked
+        )
 
     def closeEvent(self, event):
         if hasattr(self, '_home_page') and hasattr(self._home_page, '_checker'):
