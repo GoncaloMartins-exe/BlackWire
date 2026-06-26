@@ -289,6 +289,8 @@ class DashboardPage(QWidget):
         self._connection_lost = False
         self._disconnect_popup.hide()
         self.refresh_all()
+        self._restart_timers()
+        self.refresh_network()
 
     def _on_refresh(self):
         self._refresh_btn.setEnabled(False)
