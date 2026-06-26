@@ -1,4 +1,5 @@
 from collections import deque
+import time
 from PySide6.QtCore import Qt, QRectF, QPointF, Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from PySide6.QtGui import QPainter, QPen, QColor, QFont, QPainterPath, QLinearGradient
@@ -18,23 +19,33 @@ class NetworkGraph(QWidget):
         super().__init__(parent)
         self._upload   = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
         self._download = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
+        self._timestamps = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
         self._peak     = 1.0
-        self._hover_i  = -1          # coluna actualmente sob o cursor
+        self._hover_i  = -1          # coluna atualmente sob o cursor
         self.setMinimumHeight(80)
         self.setMouseTracking(True)
 
     def push(self, upload_mbps: float, download_mbps: float):
         self._upload.append(upload_mbps)
         self._download.append(download_mbps)
+        self._timestamps.append(time.time()) 
         self._peak = max(1.0, max(self._upload), max(self._download))
         self.update()
 
     def reset(self):
         self._upload   = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
         self._download = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
+        self._timestamps = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
         self._peak     = 1.0
         self._hover_i  = -1
         self.update()
+
+    def get_seconds_ago(self, index: int) -> int:
+        ts = list(self._timestamps)
+        t  = ts[index]
+        if t == 0.0:
+            return -1
+        return int(time.time() - t)
     
     # ==================================================================
     # Eventos de rato
@@ -234,12 +245,12 @@ class NetworkWidget(QWidget):
     # ------------------------------------------------------------------
     def _on_hover(self, index: int, upload: float, download: float):
         if index == -1:
-            # Repor valores actuais
             self._update_legend(self._cur_up, self._cur_down, self._cur_lat)
         else:
-            offset = MAX_POINTS - 1 - index          # quantos segundos atrás
-            ago    = offset * 5
-            suffix = f"  ({ago}s before)" if ago > 0 else "  (now)"
+            ago = self._graph.get_seconds_ago(index)
+            suffix = f"  ({ago}s ago)" if ago > 0 else "  (now)"
+            if ago < 0:
+                suffix = ""
             self._dn_val.setText(f"↓  {download:.1f} MB/s{suffix}")
             self._up_val.setText(f"↑  {upload:.1f} MB/s{suffix}")
 

@@ -125,9 +125,12 @@ class DashboardPage(QWidget):
         return timer
 
     def _restart_timers(self):
+        self._prev_rx = self._prev_tx = self._prev_time = None
         for timer in [self._stats_timer, self._uptime_timer, self._network_timer, self._temp_timer]:
             timer.stop()
             timer.start()
+        self.refresh_network()
+        QTimer.singleShot(500, self.refresh_network)
 
     # Data Refresh ____________________________________________________________________
 
