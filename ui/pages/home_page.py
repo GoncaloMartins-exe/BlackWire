@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
 from ui.widgets.helper import *
 from ui.widgets.add_server_widget import AddServerForm, _ADD_BTN_STYLE
 from ui.widgets.server_card_widget import ServerCard, server_key
+from ui.widgets.toast_notification_widget import ToastNotification, TOAST_GREEN, TOAST_RIGHT
 from core.storage import ServerManager
 from core.server_checker import ServerChecker
 
@@ -296,3 +297,12 @@ class HomePage(QWidget):
         card = self._cards.get(key)
         if card:
             card.set_connected(True)
+
+            self._toast = ToastNotification(
+                self.window(),
+                f"Connected to {server['name']}",
+                color=TOAST_GREEN,
+                position=TOAST_RIGHT,
+                auto_hide_ms=3000,
+            )
+            self._toast.show_animation()
