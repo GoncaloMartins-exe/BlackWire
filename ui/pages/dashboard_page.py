@@ -156,6 +156,8 @@ class DashboardPage(QWidget):
         self.refresh_storage()
         self.refresh_cpu_ram()
         self.refresh_uptime()
+        self.refresh_network()
+        self.refresh_cpu_temp()
 
     def refresh_storage(self):
         if not self.client:
@@ -290,7 +292,6 @@ class DashboardPage(QWidget):
         self._disconnect_popup.hide()
         self.refresh_all()
         self._restart_timers()
-        self.refresh_network()
 
     def _on_refresh(self):
         self._refresh_btn.setEnabled(False)
