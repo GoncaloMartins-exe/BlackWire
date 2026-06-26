@@ -324,6 +324,8 @@ class DashboardPage(QWidget):
         self._storage.set_value(0, "OFF", "")
         self._uptime_label.setText("Uptime: Offline")
         self._cpu_temp.reset()
+        self._prev_rx = self._prev_tx = self._prev_time = None
+        self._network.reset()
 
     def handle_reconnected(self):
         if not self._connection_lost:

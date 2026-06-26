@@ -29,6 +29,13 @@ class NetworkGraph(QWidget):
         self._peak = max(1.0, max(self._upload), max(self._download))
         self.update()
 
+    def reset(self):
+        self._upload   = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
+        self._download = deque([0.0] * MAX_POINTS, maxlen=MAX_POINTS)
+        self._peak     = 1.0
+        self._hover_i  = -1
+        self.update()
+    
     # ==================================================================
     # Eventos de rato
     # ==================================================================
@@ -213,6 +220,14 @@ class NetworkWidget(QWidget):
         legend.addWidget(lat_col, stretch=1)
 
         root.addLayout(legend)
+
+    def reset(self):
+        self._cur_up   = 0.0
+        self._cur_down = 0.0
+        self._cur_lat  = None
+        self._iface_label.setText("—")
+        self._graph.reset()
+        self._update_legend(0.0, 0.0, None)
 
     # ------------------------------------------------------------------
     # Slots
