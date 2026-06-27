@@ -42,7 +42,7 @@ class CpuTempCard(QWidget):
         self._temp_label = QLabel("—")
         self._temp_label.setAlignment(Qt.AlignCenter)
         self._temp_label.setStyleSheet(
-            f"color: {BW_TEXT}; font-size: 22px; font-weight: 700; background: transparent;"
+            f"color: {BW_TEXT}; font-size: 22px; font-weight: 700; background: transparent; border: none;"
         )
         root.addWidget(self._temp_label)
 
@@ -50,18 +50,24 @@ class CpuTempCard(QWidget):
         self._status_label = QLabel("")
         self._status_label.setAlignment(Qt.AlignCenter)
         self._status_label.setStyleSheet(
-            "color: #666666; font-size: 11px; background: transparent;"
+            "color: #666666; font-size: 11px; background: transparent; border: none;"
         )
         root.addWidget(self._status_label)
 
-        root.addSpacing(14)
+        root.addSpacing(30)
 
         # Min / Max row ─────────────────────────────────────────────────────
         minmax_row = QWidget()
-        minmax_row.setStyleSheet("background: transparent;")
+        minmax_row.setObjectName("minmaxRow")
+        minmax_row.setStyleSheet("""
+            QWidget#minmaxRow {
+                background: transparent;
+                border: none;
+            }
+        """)
         minmax_layout = QHBoxLayout(minmax_row)
         minmax_layout.setContentsMargins(0, 0, 0, 0)
-        minmax_layout.setSpacing(0)
+        minmax_layout.setSpacing(15)
 
         self._min_widget = self._build_stat("MIN", "—")
         self._max_widget = self._build_stat("MAX", "—")
@@ -74,19 +80,36 @@ class CpuTempCard(QWidget):
     def _build_stat(self, label_text: str, initial_value: str) -> QWidget:
         """Build a small labelled stat column (MIN or MAX)."""
         container = QWidget()
-        container.setStyleSheet("background: transparent;")
+        container.setObjectName("statContainer")
+        container.setStyleSheet("""
+            background: transparent;
+            border: 0px;
+        """)
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(2)
+        layout.setSpacing(4)
         layout.setAlignment(Qt.AlignCenter)
 
         lbl = QLabel(label_text)
         lbl.setAlignment(Qt.AlignCenter)
-        lbl.setStyleSheet("color: #555555; font-size: 9px; font-weight: 700; background: transparent; letter-spacing: 1px;")
+        lbl.setStyleSheet("""
+            color: #555555;
+            font-size: 9px;
+            font-weight: 700;
+            background: transparent;
+            letter-spacing: 1px;
+            border: none;
+        """)
 
         val = QLabel(initial_value)
         val.setAlignment(Qt.AlignCenter)
-        val.setStyleSheet(f"color: {BW_TEXT_DIM}; font-size: 13px; font-weight: 600; background: transparent;")
+        val.setStyleSheet(f"""
+            color: {BW_TEXT_DIM};
+            font-size: 13px;
+            font-weight: 600;
+            background: transparent;
+            border: none;
+        """)
 
         layout.addWidget(lbl)
         layout.addWidget(val)
@@ -123,11 +146,11 @@ class CpuTempCard(QWidget):
 
         self._temp_label.setText(f"{current:.1f} °C")
         self._temp_label.setStyleSheet(
-            f"color: {BW_TEXT}; font-size: 22px; font-weight: 700; background: transparent;"
+            f"color: {BW_TEXT}; font-size: 22px; font-weight: 700; background: transparent; border: none;"
         )
         self._status_label.setText(self._status_text(current))
         self._status_label.setStyleSheet(
-            f"color: {self._temp_color(current)}; font-size: 9px; background: transparent;"
+            f"color: {self._temp_color(current)}; font-size: 9px; background: transparent; border: none;"
         )
         self._min_widget._value_label.setText(f"{self._min_temp:.1f} °C")
         self._max_widget._value_label.setText(f"{self._max_temp:.1f} °C")
@@ -137,7 +160,7 @@ class CpuTempCard(QWidget):
         self._current = self._min_temp = self._max_temp = None
         self._temp_label.setText("—")
         self._temp_label.setStyleSheet(
-            f"color: {BW_CYAN}; font-size: 48px; font-weight: 700; background: transparent;"
+            f"color: {BW_CYAN}; font-size: 48px; font-weight: 700; background: transparent; border: none;"
         )
         self._status_label.setText("")
         self._min_widget._value_label.setText("—")
