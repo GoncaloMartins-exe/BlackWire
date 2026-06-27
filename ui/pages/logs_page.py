@@ -17,7 +17,6 @@ COMBO_STYLE = f"""
         border: 1px solid rgba(255,255,255,25);
         border-radius: 8px;
         color: {BW_TEXT};
-        font-size: 11px;
         padding: 4px 14px;
         min-height: 24px;
         max-height: 24px;
