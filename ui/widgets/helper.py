@@ -24,7 +24,9 @@ BW_PILL_STYLE = f"""
         border-radius: 8px;
         color: {BW_TEXT_DIM};
         font-size: 11px;
-        padding: 5px 14px;
+        padding: 4px 14px;
+        min-height: 24px;
+        max-height: 24px;
     }}
     QPushButton:hover {{
         background-color: rgba(255, 255, 255, 20);

@@ -17,7 +17,10 @@ COMBO_STYLE = f"""
         border: 1px solid rgba(255,255,255,25);
         border-radius: 8px;
         color: {BW_TEXT};
-        padding: 5px 14px;
+        font-size: 11px;
+        padding: 4px 14px;
+        min-height: 24px;
+        max-height: 24px;
     }}
 """
 
@@ -79,12 +82,10 @@ class LogsPage(QWidget):
         self._log_selector = QComboBox(styleSheet=COMBO_STYLE)
         self._log_selector.addItems([label for label, _ in LOG_COMMANDS])
         self._log_selector.currentIndexChanged.connect(self._on_log_changed)
-        self._log_selector.setFixedHeight(28)
 
         self._custom_path = QLineEdit(placeholderText="/var/log/nginx/access.log", visible=False)
 
         self._refresh_btn = make_pill_button("⟳  Refresh")
-        self._refresh_btn.setFixedHeight(28)
         self._refresh_btn.clicked.connect(self.refresh_logs)
 
         header = QHBoxLayout()
