@@ -27,6 +27,7 @@ class CpuTempCard(QWidget):
         self._max_temp: float | None = None
 
         self.title = "CPU TEMPERATURE"
+        self.setFixedSize(200, 200)
 
         self._setup_ui()
 
@@ -35,14 +36,15 @@ class CpuTempCard(QWidget):
     def _setup_ui(self):
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(20, 16, 20, 16)
+        root.setContentsMargins(20, 0, 20, 16)
         root.setSpacing(0)
+        root.setAlignment(Qt.AlignCenter)
 
         # Main temperature value ────────────────────────────────────────────
         self._temp_label = QLabel("—")
         self._temp_label.setAlignment(Qt.AlignCenter)
         self._temp_label.setStyleSheet(
-            f"color: {BW_TEXT}; font-size: 22px; font-weight: 700; background: transparent; border: none;"
+            f"color: {BW_TEXT}; font-size: 29px; font-weight: 700; background: transparent; border: none;"
         )
         root.addWidget(self._temp_label)
 
@@ -54,7 +56,7 @@ class CpuTempCard(QWidget):
         )
         root.addWidget(self._status_label)
 
-        root.addSpacing(30)
+        root.addSpacing(16)
 
         # Min / Max row ─────────────────────────────────────────────────────
         minmax_row = QWidget()
@@ -146,11 +148,11 @@ class CpuTempCard(QWidget):
 
         self._temp_label.setText(f"{current:.1f} °C")
         self._temp_label.setStyleSheet(
-            f"color: {BW_TEXT}; font-size: 22px; font-weight: 700; background: transparent; border: none;"
+            f"color: {BW_TEXT}; font-size: 29px; font-weight: 700; background: transparent; border: none;"
         )
         self._status_label.setText(self._status_text(current))
         self._status_label.setStyleSheet(
-            f"color: {self._temp_color(current)}; font-size: 9px; background: transparent; border: none;"
+            f"color: {self._temp_color(current)}; font-size: 14px; background: transparent; border: none;"
         )
         self._min_widget._value_label.setText(f"{self._min_temp:.1f} °C")
         self._max_widget._value_label.setText(f"{self._max_temp:.1f} °C")
@@ -160,7 +162,7 @@ class CpuTempCard(QWidget):
         self._current = self._min_temp = self._max_temp = None
         self._temp_label.setText("—")
         self._temp_label.setStyleSheet(
-            f"color: {BW_CYAN}; font-size: 48px; font-weight: 700; background: transparent; border: none;"
+            f"color: {BW_CYAN}; font-size: 29px; font-weight: 700; background: transparent; border: none;"
         )
         self._status_label.setText("")
         self._min_widget._value_label.setText("—")
