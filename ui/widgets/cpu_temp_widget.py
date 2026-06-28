@@ -36,9 +36,15 @@ class CpuTempCard(QWidget):
     def _setup_ui(self):
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(20, 0, 20, 16)
+        root.setContentsMargins(20, 0, 20, 24)
         root.setSpacing(0)
-        root.setAlignment(Qt.AlignCenter)
+        
+        center = QWidget()
+        center.setStyleSheet("background: transparent; border: none;")
+        center_layout = QVBoxLayout(center)
+        center_layout.setContentsMargins(0, 0, 0, 0)
+        center_layout.setSpacing(4)
+        center_layout.setAlignment(Qt.AlignCenter)
 
         # Main temperature value ────────────────────────────────────────────
         self._temp_label = QLabel("—")
@@ -46,7 +52,6 @@ class CpuTempCard(QWidget):
         self._temp_label.setStyleSheet(
             f"color: {BW_TEXT}; font-size: 29px; font-weight: 700; background: transparent; border: none;"
         )
-        root.addWidget(self._temp_label)
 
         # Status / description ──────────────────────────────────────────────
         self._status_label = QLabel("")
@@ -54,9 +59,9 @@ class CpuTempCard(QWidget):
         self._status_label.setStyleSheet(
             "color: #666666; font-size: 11px; background: transparent; border: none;"
         )
-        root.addWidget(self._status_label)
 
-        root.addSpacing(16)
+        center_layout.addWidget(self._temp_label)
+        center_layout.addWidget(self._status_label)
 
         # Min / Max row ─────────────────────────────────────────────────────
         minmax_row = QWidget()
@@ -77,6 +82,9 @@ class CpuTempCard(QWidget):
         minmax_layout.addWidget(self._min_widget, stretch=1)
         minmax_layout.addWidget(self._max_widget, stretch=1)
 
+        root.addStretch()
+        root.addWidget(center)
+        root.addStretch()
         root.addWidget(minmax_row)
 
     def _build_stat(self, label_text: str, initial_value: str) -> QWidget:
