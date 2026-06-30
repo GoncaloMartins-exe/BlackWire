@@ -24,6 +24,8 @@ class DashboardPage(QWidget):
 
         self.network_interface = "eth0"
 
+        self._prev_cpu_idle: int | None = None
+        self._prev_cpu_total: int | None = None
         self._prev_rx: int | None = None
         self._prev_tx: int | None = None
         self._prev_time: float | None = None
@@ -79,8 +81,8 @@ class DashboardPage(QWidget):
         self._ram     = CircularGauge("RAM USAGE",       "RAM",     "GB", BW_CYAN)
         self._storage = CircularGauge("STORAGE USAGE",   "STORAGE", "GB", BW_GREEN)
 
-        self._cpu.set_value(1, "100%")
-        self._ram.set_value(0.5, "0 GB", "/ 0 GB")
+        self._cpu.set_value(0, "0%")
+        self._ram.set_value(0, "0 GB", "/ 0 GB")
         self._storage.set_value(0, "0 GB", "/ 0 GB")
         self._cpu_temp = CpuTempCard()
 
@@ -194,10 +196,21 @@ class DashboardPage(QWidget):
             print("CPU/RAM refresh error:", e)
 
     def _refresh_cpu(self):
-        stdout = self._get_stdout("top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}'")
-        if stdout:
-            cpu = float(stdout)
-            self._cpu.set_value(cpu / 100, f"{cpu:.0f}%")
+        stdout = self._get_stdout("head -1 /proc/stat")
+        if not stdout:
+            return
+        parts = list(map(int, stdout.split()[1:]))
+        idle = parts[3] + parts[4]
+        total = sum(parts)
+
+        if self._prev_cpu_total is not None:
+            delta_idle = idle - self._prev_cpu_idle
+            delta_total = total - self._prev_cpu_total
+            if delta_total > 0:
+                cpu_pct = 100 * (1 - delta_idle / delta_total)
+                self._cpu.set_value(cpu_pct / 100, f"{cpu_pct:.0f}%")
+
+        self._prev_cpu_idle, self._prev_cpu_total = idle, total
 
     def _refresh_ram(self):
         stdout = self._get_stdout("grep -E '^(MemTotal|MemAvailable):' /proc/meminfo")
