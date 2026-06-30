@@ -22,7 +22,7 @@ class DashboardPage(QWidget):
         self.client = client
         self._connection_lost = False
 
-        self.network_interface = "eth0"
+        self.network_interface = None
 
         self._prev_cpu_idle: int | None = None
         self._prev_cpu_total: int | None = None
@@ -128,6 +128,7 @@ class DashboardPage(QWidget):
 
     def _restart_timers(self):
         self._prev_rx = self._prev_tx = self._prev_time = None
+        self.network_interface = None
         for timer in [self._stats_timer, self._uptime_timer, self._network_timer, self._temp_timer]:
             timer.stop()
             timer.start()
@@ -156,6 +157,11 @@ class DashboardPage(QWidget):
             return None
         stdout = result.get("stdout", "").strip()
         return stdout or None
+    
+    def _detect_network_interface(self):
+        stdout = self._get_stdout("ip route show default | awk '{print $5}' | head -1")
+        if stdout:
+            self.network_interface = stdout.strip()
 
     def refresh_all(self):
         self.refresh_storage()
@@ -240,6 +246,11 @@ class DashboardPage(QWidget):
     def refresh_network(self):
         if not self.client:
             return
+        
+        if not self.network_interface:
+            self._detect_network_interface()
+            if not self.network_interface:
+                return
 
         try:
             stdout = self._get_stdout("cat /proc/net/dev")
@@ -348,6 +359,7 @@ class DashboardPage(QWidget):
         self._uptime_label.setText("Uptime: Offline")
         self._cpu_temp.reset()
         self._prev_rx = self._prev_tx = self._prev_time = None
+        self.network_interface = None
         self._network.reset()
 
     def handle_reconnected(self):
