@@ -284,12 +284,16 @@ class DashboardPage(QWidget):
     def refresh_cpu_temp(self):
         if not self.client:
             return
-        try:
-            stdout = self._get_stdout("cat /sys/class/thermal/thermal_zone0/temp")
-            if stdout:
-                self._cpu_temp.update_temp(float(stdout) / 1000.0)
-        except Exception as e:
-            print("CPU temp refresh error:", e)
+        cmd = (
+            "for z in /sys/class/thermal/thermal_zone*; do "
+            "t=$(cat $z/type 2>/dev/null); "
+            "if echo \"$t\" | grep -qiE 'x86_pkg_temp|coretemp|cpu-thermal|cpu_thermal'; then "
+            "cat $z/temp; break; fi; "
+            "done"
+        )
+        stdout = self._get_stdout(cmd)
+        if stdout:
+            self._cpu_temp.update_temp(float(stdout) / 1000.0)
 
     # UI Updates ____________________________________________________________________
 
