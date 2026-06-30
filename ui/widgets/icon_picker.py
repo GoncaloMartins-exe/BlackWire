@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 
 from ui.widgets.helper import *
 
-SERVER_LOGOS_DIR = os.path.join("assets", "server_logos")
+SERVER_LOGOS_DIR = resource_path("assets", "server_logos")
 
 DEFAULT_SERVER_ICON = "domain-servers1.png"
 

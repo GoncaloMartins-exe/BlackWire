@@ -4,7 +4,6 @@ import subprocess
 from pathlib import Path
 
 def main():
-    # garante que estamos na raiz do projeto (onde está o main.py)
     project_root = Path(__file__).resolve().parent.parent
     os.chdir(project_root)
 
@@ -15,13 +14,11 @@ def main():
     else:
         icon_path = project_root / "assets" / "icons" / "LogoBlackWire.png"
 
-    if is_windows:
-        add_data = f"assets;assets"
-    else:
-        add_data = f"assets:assets"
+    sep = ";" if is_windows else ":"
+    add_data = f"{project_root / 'assets'}{sep}assets"
 
     cmd = [
-        "pyinstaller",
+        sys.executable, "-m", "PyInstaller",
         "--clean",
         "--onefile",
         "--windowed",

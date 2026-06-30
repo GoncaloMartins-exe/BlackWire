@@ -1,4 +1,5 @@
 import os
+import sys
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout
 from PySide6.QtGui import QPixmap
@@ -15,7 +16,12 @@ BW_TEXT       = "#e0eaf5"
 BW_TEXT_DIM   = "#5a7a99"
 SIDEBAR_WIDTH = 200
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+def resource_path(*parts) -> str:
+    if hasattr(sys, "_MEIPASS"):
+        base = sys._MEIPASS
+    else:
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    return os.path.join(base, *parts)
 
 BW_PILL_STYLE = f"""
     QLabel, QPushButton {{
@@ -54,7 +60,7 @@ def load_image(
     label.setAlignment(Qt.AlignCenter)
     label.setStyleSheet(style)
 
-    path = os.path.join(PROJECT_ROOT, *folder.split("/"), filename)
+    path = resource_path(*folder.split("/"), filename)
     pixmap = QPixmap(path)
 
     if not pixmap.isNull():
