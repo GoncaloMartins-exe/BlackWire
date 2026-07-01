@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 from ui.pages.dashboard_page import DashboardPage
 from ui.pages.home_page import HomePage
 from ui.pages.logs_page import LogsPage
+from ui.pages.settings_page import SettingsPage
 from ui.widgets.helper import *
 from ui.widgets.server_card_widget import server_key
 
@@ -181,7 +182,7 @@ class MainWindow(QMainWindow):
             "Dashboard": QWidget(),
             "Logs":      QWidget(),
             "Files":     self._placeholder("Files"),
-            "Settings":  self._placeholder("Settings"),
+            "Settings":  SettingsPage(),
         }
 
         for page in self._pages.values():
