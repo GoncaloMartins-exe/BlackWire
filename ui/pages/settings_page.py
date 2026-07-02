@@ -145,6 +145,25 @@ class SettingsPage(QWidget):
         layout.setSpacing(8)
         layout.setAlignment(Qt.AlignTop)
 
+        # ── Section: Appearance ───────────────────────────────────────────────
+        sec_theme, sec_theme_layout = _make_section("APPEARANCE")
+        layout.addWidget(sec_theme)
+
+        theme_combo = QComboBox()
+        theme_combo.addItems([
+            "Dark",
+            "Light",
+            "System"
+        ])
+
+        sec_theme_layout.addWidget(
+            _make_row(
+                "Theme",
+                "Choose the application appearance.",
+                theme_combo
+            )
+        )
+
         # ── Section: About ────────────────────────────────────────────────────
         sec3, sec3_layout = _make_section("ABOUT")
         layout.addWidget(sec3)
