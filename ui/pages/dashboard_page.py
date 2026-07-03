@@ -35,10 +35,12 @@ class DashboardPage(QWidget):
 
         self.refresh_all()
 
-        self._stats_timer   = self._setup_timer(2000,  self.refresh_cpu_ram)
-        self._uptime_timer  = self._setup_timer(60000, self.refresh_uptime)
-        self._network_timer = self._setup_timer(5000,  self.refresh_network, call_immediately=True)
-        self._temp_timer    = self._setup_timer(5000, self.refresh_cpu_temp, call_immediately=True)
+        self._stats_timer   = self._setup_timer(dash_settings.get("cpu_ram_interval"), self.refresh_cpu_ram)
+        self._uptime_timer  = self._setup_timer(dash_settings.get("uptime_interval"),  self.refresh_uptime)
+        self._network_timer = self._setup_timer(dash_settings.get("network_interval"), self.refresh_network, call_immediately=True)
+        self._temp_timer    = self._setup_timer(dash_settings.get("temp_interval"),    self.refresh_cpu_temp, call_immediately=True)
+
+        dash_settings.changed.connect(self._on_settings_changed)
 
     # UI Construction ____________________________________________________________
 
@@ -134,6 +136,12 @@ class DashboardPage(QWidget):
             timer.start()
         self.refresh_network()
         QTimer.singleShot(500, self.refresh_network)
+
+    def _on_settings_changed(self):
+        self._stats_timer.setInterval(dash_settings.get("cpu_ram_interval"))
+        self._uptime_timer.setInterval(dash_settings.get("uptime_interval"))
+        self._network_timer.setInterval(dash_settings.get("network_interval"))
+        self._temp_timer.setInterval(dash_settings.get("temp_interval"))
 
     # Data Refresh ____________________________________________________________________
 

@@ -145,24 +145,47 @@ class SettingsPage(QWidget):
         layout.setSpacing(8)
         layout.setAlignment(Qt.AlignTop)
 
-        # ── Section: Appearance ───────────────────────────────────────────────
-        sec_theme, sec_theme_layout = _make_section("APPEARANCE")
-        layout.addWidget(sec_theme)
+        # ── Section: Connection ───────────────────────────────────────────────
+        sec_conn, sec_conn_layout = _make_section("CONNECTION")
+        layout.addWidget(sec_conn)
 
-        theme_combo = QComboBox()
-        theme_combo.addItems([
-            "Dark",
-            "Light",
-            "System"
-        ])
-
-        sec_theme_layout.addWidget(
-            _make_row(
-                "Theme",
-                "Choose the application appearance.",
-                theme_combo
-            )
+        self._combo_cpu_ram = QComboBox()
+        self._combo_cpu_ram.addItems(["1s", "2s", "5s", "10s"])
+        self._combo_cpu_ram.setCurrentIndex(1)
+        self._combo_cpu_ram.currentTextChanged.connect(
+            lambda t: dash_settings.set("cpu_ram_interval", int(t.replace("s", "")) * 1000)
         )
+        sec_conn_layout.addWidget(_make_row(
+            "CPU & RAM Refresh",
+            "How often CPU and RAM usage are polled.",
+            self._combo_cpu_ram,
+        ))
+        sec_conn_layout.addSpacing(8)
+
+        self._combo_network = QComboBox()
+        self._combo_network.addItems(["2s", "5s", "10s", "30s"])
+        self._combo_network.setCurrentIndex(1)
+        self._combo_network.currentTextChanged.connect(
+            lambda t: dash_settings.set("network_interval", int(t.replace("s", "")) * 1000)
+        )
+        sec_conn_layout.addWidget(_make_row(
+            "Network Refresh",
+            "How often upload, download and ping are polled.",
+            self._combo_network,
+        ))
+        sec_conn_layout.addSpacing(8)
+
+        self._combo_temp = QComboBox()
+        self._combo_temp.addItems(["2s", "5s", "10s", "30s"])
+        self._combo_temp.setCurrentIndex(1)
+        self._combo_temp.currentTextChanged.connect(
+            lambda t: dash_settings.set("temp_interval", int(t.replace("s", "")) * 1000)
+        )
+        sec_conn_layout.addWidget(_make_row(
+            "CPU Temperature Refresh",
+            "How often the CPU temperature sensor is read.",
+            self._combo_temp,
+        ))
 
         # ── Section: About ────────────────────────────────────────────────────
         sec3, sec3_layout = _make_section("ABOUT")
