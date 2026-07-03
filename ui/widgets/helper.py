@@ -1,6 +1,6 @@
 import os
 import sys
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtWidgets import QLabel, QPushButton, QWidget, QVBoxLayout, QHBoxLayout
 from PySide6.QtGui import QPixmap
 
@@ -154,3 +154,28 @@ def make_widget_card(title: str, widget: QWidget) -> QWidget:
     )
     layout.addWidget(widget, alignment=Qt.AlignCenter)
     return card
+
+class DashboardSettings(QObject):
+    changed = Signal()
+
+    _DEFAULTS = {
+        "cpu_ram_interval": 2000,
+        "network_interval": 5000,
+        "temp_interval":    5000,
+        "uptime_interval":  60000,
+        "cmd_timeout":      3,
+    }
+
+    def __init__(self):
+        super().__init__()
+        self._values = dict(self._DEFAULTS)
+
+    def set(self, key: str, value):
+        if self._values.get(key) != value:
+            self._values[key] = value
+            self.changed.emit()
+
+    def get(self, key: str):
+        return self._values[key]
+
+dash_settings = DashboardSettings()
