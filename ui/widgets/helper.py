@@ -168,11 +168,37 @@ class DashboardSettings(QObject):
 
     def __init__(self):
         super().__init__()
+        from pathlib import Path
+        from platformdirs import user_data_dir
+        import json as _json
+        self._json = _json
+        self._file = Path(user_data_dir("BlackWire")) / "settings.json"
+        self._file.parent.mkdir(parents=True, exist_ok=True)
         self._values = dict(self._DEFAULTS)
+        self._load()
+
+    def _load(self):
+        try:
+            if self._file.exists():
+                saved = self._json.loads(self._file.read_text(encoding="utf-8"))
+                for k, v in saved.items():
+                    if k in self._values:
+                        self._values[k] = v
+        except Exception as e:
+            print(f"Settings load error: {e}")
+
+    def _save(self):
+        try:
+            self._file.write_text(
+                self._json.dumps(self._values, indent=4), encoding="utf-8"
+            )
+        except Exception as e:
+            print(f"Settings save error: {e}")
 
     def set(self, key: str, value):
         if self._values.get(key) != value:
             self._values[key] = value
+            self._save()
             self.changed.emit()
 
     def get(self, key: str):
