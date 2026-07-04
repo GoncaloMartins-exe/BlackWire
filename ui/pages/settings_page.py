@@ -5,6 +5,12 @@ from PySide6.QtWidgets import (
 )
 from ui.widgets.helper import *
 
+def _combo_index(items: list[str], value: str) -> int:
+    try:
+        return items.index(value)
+    except ValueError:
+        return 0
+
 
 # Settings Section Header ________________________________________________________
 
@@ -151,7 +157,7 @@ class SettingsPage(QWidget):
 
         self._combo_cpu_ram = QComboBox()
         self._combo_cpu_ram.addItems(["1s", "2s", "5s", "10s"])
-        self._combo_cpu_ram.setCurrentIndex(1)
+        self._combo_cpu_ram.setCurrentIndex(_combo_index(["1s", "2s", "5s", "10s"], f"{dash_settings.get('cpu_ram_interval') // 1000}s"))
         self._combo_cpu_ram.currentTextChanged.connect(
             lambda t: dash_settings.set("cpu_ram_interval", int(t.replace("s", "")) * 1000)
         )
@@ -164,7 +170,7 @@ class SettingsPage(QWidget):
 
         self._combo_network = QComboBox()
         self._combo_network.addItems(["2s", "5s", "10s", "30s"])
-        self._combo_network.setCurrentIndex(1)
+        self._combo_network.setCurrentIndex(_combo_index(["2s", "5s", "10s", "30s"], f"{dash_settings.get('network_interval') // 1000}s"))
         self._combo_network.currentTextChanged.connect(
             lambda t: dash_settings.set("network_interval", int(t.replace("s", "")) * 1000)
         )
@@ -177,7 +183,7 @@ class SettingsPage(QWidget):
 
         self._combo_temp = QComboBox()
         self._combo_temp.addItems(["2s", "5s", "10s", "30s"])
-        self._combo_temp.setCurrentIndex(1)
+        self._combo_temp.setCurrentIndex(_combo_index(["2s", "5s", "10s", "30s"], f"{dash_settings.get('temp_interval') // 1000}s"))
         self._combo_temp.currentTextChanged.connect(
             lambda t: dash_settings.set("temp_interval", int(t.replace("s", "")) * 1000)
         )
