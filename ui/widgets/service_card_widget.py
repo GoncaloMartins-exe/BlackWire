@@ -1,6 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
 from ui.widgets.helper import *
+from ui.widgets.service_dialog import ServiceDialog
+
 
 class ServiceCard(QWidget):
     
@@ -8,6 +10,10 @@ class ServiceCard(QWidget):
         super().__init__(parent)
         self.setFixedSize(300, 90)
         self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setCursor(Qt.PointingHandCursor)
+
+        self._name = name
+
         self.setStyleSheet(f"""
             QWidget {{
                 background-color: rgba(255, 255, 255, 15);
@@ -45,3 +51,9 @@ class ServiceCard(QWidget):
 
         layout.addWidget(icon)
         layout.addWidget(text_col)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            dialog = ServiceDialog(self._name, parent=self.window())
+            dialog.exec()
+        super().mousePressEvent(event)
