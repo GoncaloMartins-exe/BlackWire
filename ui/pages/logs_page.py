@@ -100,10 +100,18 @@ class LogsPage(QWidget):
         self._refresh_btn.clicked.connect(self.refresh_logs)
 
         header = QHBoxLayout()
-        header.addWidget(make_label("System Logs", color=BW_TEXT, size=20, bold=True))
+        title_text = f"{self._service_label} — Live Logs" if self.service_key else "System Logs"
+        header.addWidget(make_label(title_text, color=BW_TEXT, size=20, bold=True))
         header.addStretch()
-        for w in (self._log_selector, self._custom_path, self._refresh_btn):
-            header.addWidget(w)
+
+        if self.service_key:
+            self._log_selector = None
+            self._custom_path = None
+        else:
+            header.addWidget(self._log_selector)
+            header.addWidget(self._custom_path)
+
+        header.addWidget(self._refresh_btn)
         root.addLayout(header)
 
         # Log display
