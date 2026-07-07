@@ -1,5 +1,5 @@
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPlainTextEdit, QLineEdit
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPlainTextEdit, QLineEdit, QDialog
 from PySide6.QtGui import QFont
 from ui.widgets.helper import *
 from ui.widgets.toast_notification_widget import ToastNotification
@@ -192,3 +192,25 @@ class LogsPage(QWidget):
             QTimer.singleShot(800, lambda: self._refresh_btn.setEnabled(True))
             if not self._timer.isActive():
                 self._timer.start()
+
+class LogsWindow(QDialog):
+
+      def __init__(self, service_key, server, client, parent=None):
+          super().__init__(parent)
+          self.setWindowTitle("Logs")
+          self.resize(760, 520)
+          self.setStyleSheet(f"background-color: {BW_BG};")
+
+          layout = QVBoxLayout(self)
+          layout.setContentsMargins(0, 0, 0, 0)
+
+          self._page = LogsPage(server=server, client=client, service_key=service_key, parent=self)
+          layout.addWidget(self._page)
+
+      def showEvent(self, event):
+          super().showEvent(event)
+          self._page.showEvent(event)
+
+      def closeEvent(self, event):
+          self._page.hideEvent(event)
+          super().closeEvent(event)
