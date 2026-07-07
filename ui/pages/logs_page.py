@@ -139,6 +139,8 @@ class LogsPage(QWidget):
         self._timer.start()
 
     def _on_log_changed(self):
+        if not self._log_selector:
+          return
         self._custom_path.setVisible(self._log_selector.currentIndex() == 3)
         self._log_display.setPlainText("Loading logs...")
         self.refresh_logs()
@@ -150,6 +152,10 @@ class LogsPage(QWidget):
             if not self._timer.isActive():
                 self._timer.start()
 
+    def hideEvent(self, event):
+      super().hideEvent(event)
+      self._timer.stop()
+
     def _scroll_to_bottom(self):
         sb = self._log_display.verticalScrollBar()
         sb.setValue(sb.maximum())
@@ -159,11 +165,13 @@ class LogsPage(QWidget):
             self._log_display.setPlainText("Sem ligação SSH ativa. Seleciona um servidor no Home.")
             return
 
-        self._refresh_btn.setEnabled(False)
-        idx = self._log_selector.currentIndex()
-        _, cmd = LOG_COMMANDS[idx]
+        if self._service_cmd:
+            cmd = self._service_cmd
+        else:
+            idx = self._log_selector.currentIndex()
+            _, cmd = LOG_COMMANDS[idx]
 
-        if cmd is None:  # Custom log
+        if not self._service_cmd and cmd is None:
             path = self._custom_path.text().strip()
             if not path:
                 self._log_display.setPlainText("Introduz o caminho do ficheiro de log.")
