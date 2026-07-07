@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPla
 from PySide6.QtGui import QFont
 from ui.widgets.helper import *
 from ui.widgets.toast_notification_widget import ToastNotification
+from ui.services.service_config_store import load_service
 
 LOG_COMMANDS = [
     ("System / Service (journalctl)", "journalctl -n 100 --no-pager"),
@@ -58,15 +59,26 @@ LOG_DISPLAY_STYLE = f"""
 
 
 class LogsPage(QWidget):
-    def __init__(self, server=None, client=None, parent=None):
+    def __init__(self, server=None, client=None, service_key=None, parent=None):
         super().__init__(parent)
         self.server = server
         self.client = client
         self._connection_lost = False
+
+        self.service_key = service_key
+        self._service_cmd = None
+        self._service_label = None
+        if service_key:
+            cfg = load_service(service_key)
+            unit = cfg.get("unit", service_key)
+            lines = cfg.get("log_lines", 100)
+            self._service_label = cfg.get("display_name", service_key)
+            self._service_cmd = f"journalctl -u {unit} -n {lines} --no-pager"
+
         self.setStyleSheet(f"background-color: {BW_BG};")
         self._setup_ui()
 
-        self._timer = QTimer(self, interval=3000)
+        self._timer = QTimer(self, interval=2000 if service_key else 3000)
         self._timer.timeout.connect(self.refresh_logs)
 
     def _setup_ui(self):
